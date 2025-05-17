@@ -163,125 +163,132 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
       context: context,
       useRootNavigator: true,
       builder: (context) {
-        return AlertDialog(
-          title: Text(isEditing ? 'Edit Film' : 'Add Film'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                  controller: genreController,
-                  decoration: InputDecoration(labelText: 'Genre'),
-                ),
-                TextField(
-                  controller: descriptionController,
-                  decoration: InputDecoration(labelText: 'Description'),
-                ),
-                TextField(
-                  controller: durationController,
-                  decoration: InputDecoration(labelText: 'Duration (min)'),
-                  keyboardType: TextInputType.number,
-                ),
-                Row(
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text(isEditing ? 'Edit Film' : 'Add Film'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(selectedDate == null ? 'Release Date' : selectedDate!.toLocal().toString().split(' ')[0]),
-                    IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime(1900),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            selectedDate = picked;
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(labelText: 'Title'),
+                    ),
+                    TextField(
+                      controller: genreController,
+                      decoration: InputDecoration(labelText: 'Genre'),
+                    ),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: InputDecoration(labelText: 'Description'),
+                    ),
+                    TextField(
+                      controller: durationController,
+                      decoration: InputDecoration(labelText: 'Duration (min)'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    Row(
+                      children: [
+                        Text(selectedDate == null ? 'Release Date' : selectedDate!.toLocal().toString().split(' ')[0]),
+                        IconButton(
+                          icon: Icon(Icons.calendar_today),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: selectedDate ?? DateTime.now(),
+                              firstDate: DateTime(1900),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              setStateDialog(() {
+                                selectedDate = picked;
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    DropdownButton<String>(
+                      value: status,
+                      items: [
+                        DropdownMenuItem(value: 'upcoming', child: Text('Upcoming')),
+                        DropdownMenuItem(value: 'now_showing', child: Text('Now Showing')),
+                        DropdownMenuItem(value: 'ended', child: Text('Ended')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setStateDialog(() {
+                            status = value;
                           });
                         }
                       },
                     ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+                            if (result != null) {
+                              setStateDialog(() {
+                                pickedFileName = result.files.first.name;
+                                localPosterBytes = result.files.first.bytes;
+                              });
+                              print('File picked: $pickedFileName');
+                            }
+                          },
+                          child: Text('Pilih Gambar'),
+                        ),
+                        SizedBox(width: 8),
+                        if (pickedFileName != null)
+                          Expanded(
+                            child: Text(
+                              'File: $pickedFileName',
+                              style: TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
-                DropdownButton<String>(
-                  value: status,
-                  items: [
-                    DropdownMenuItem(value: 'upcoming', child: Text('Upcoming')),
-                    DropdownMenuItem(value: 'now_showing', child: Text('Now Showing')),
-                    DropdownMenuItem(value: 'ended', child: Text('Ended')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        status = value;
-                      });
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (titleController.text.isEmpty ||
+                        genreController.text.isEmpty ||
+                        descriptionController.text.isEmpty ||
+                        durationController.text.isEmpty ||
+                        selectedDate == null) {
+                      return;
                     }
+                    final newFilm = Film(
+                      id: film?.id ?? 0,
+                      title: titleController.text,
+                      poster: film?.poster ?? '',
+                      genre: genreController.text,
+                      description: descriptionController.text,
+                      durationMin: int.tryParse(durationController.text) ?? 0,
+                      releaseDate: selectedDate!,
+                      status: status,
+                    );
+                    if (isEditing) {
+                      await updateFilm(newFilm);
+                    } else {
+                      await addFilm(newFilm);
+                    }
+                    Navigator.of(context).pop();
                   },
-                ),
-                Row(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
-                        if (result != null) {
-                          setState(() {
-                            pickedFileName = result.files.first.name;
-                            localPosterBytes = result.files.first.bytes;
-                          });
-                          print('File picked: $pickedFileName');
-                        }
-                      },
-                      child: Text('Pilih Gambar'),
-                    ),
-                    SizedBox(width: 8),
-                    if (pickedFileName != null)
-                      Text(
-                        'File: $pickedFileName',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                  ],
+                  child: Text(isEditing ? 'Save' : 'Add'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (titleController.text.isEmpty ||
-                    genreController.text.isEmpty ||
-                    descriptionController.text.isEmpty ||
-                    durationController.text.isEmpty ||
-                    selectedDate == null) {
-                  return;
-                }
-                final newFilm = Film(
-                  id: film?.id ?? 0,
-                  title: titleController.text,
-                  poster: film?.poster ?? '',
-                  genre: genreController.text,
-                  description: descriptionController.text,
-                  durationMin: int.tryParse(durationController.text) ?? 0,
-                  releaseDate: selectedDate!,
-                  status: status,
-                );
-                if (isEditing) {
-                  await updateFilm(newFilm);
-                } else {
-                  await addFilm(newFilm);
-                }
-                Navigator.of(context).pop();
-              },
-              child: Text(isEditing ? 'Save' : 'Add'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
