@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import '../widgets/admin_app_bar.dart';
 
 // Film model
 class Film {
@@ -295,9 +296,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Admin Film Management'),
-      ),
+      appBar: AdminAppBar(title: ''),
       body: ListView.builder(
         itemCount: films.length,
         itemBuilder: (context, index) {
@@ -386,19 +385,21 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         onTap: (index) {
-          if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/admin/seat');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/admin/showtime');
-          } else if (index == 3) {
+          if (index == 0) {
+            // Sudah di halaman film
+          } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/admin/theater');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/admin/seat');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/admin/showtime');
           }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Film'),
+          BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
           BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
           BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
-          BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
         ],
         type: BottomNavigationBarType.fixed,
       ),

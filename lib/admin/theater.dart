@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../widgets/admin_app_bar.dart';
 
 class Theater {
   int id;
@@ -10,6 +14,14 @@ class Theater {
     required this.name,
     required this.totalSeats,
   });
+
+  factory Theater.fromJson(Map<String, dynamic> json) {
+    return Theater(
+      id: json['theater_id'],
+      name: json['name'],
+      totalSeats: json['total_seats'],
+    );
+  }
 }
 
 class AdminTheaterPage extends StatefulWidget {
@@ -21,7 +33,98 @@ class AdminTheaterPage extends StatefulWidget {
 
 class _AdminTheaterPageState extends State<AdminTheaterPage> {
   List<Theater> theaters = [];
-  int _nextId = 1;
+  final String baseUrl = 'http://localhost:3000/API';
+  final _storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTheaters();
+  }
+
+  Future<String?> _getToken() async {
+    return await _storage.read(key: 'token');
+  }
+
+  Future<void> fetchTheaters() async {
+    final token = await _getToken();
+    if (token == null) return;
+    final response = await http.get(
+      Uri.parse('$baseUrl/theater'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body)['data'];
+      setState(() {
+        theaters = data.map((json) => Theater.fromJson(json)).toList();
+      });
+    }
+  }
+
+  Future<void> addTheater(String name, int totalSeats) async {
+    final token = await _getToken();
+    if (token == null) return;
+    final response = await http.post(
+      Uri.parse('$baseUrl/theater/create'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'name': name,
+        'total_seats': totalSeats,
+      }),
+    );
+    if (response.statusCode == 201) {
+      fetchTheaters();
+    } else {
+      final error = jsonDecode(response.body)['message'];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+
+  Future<void> updateTheater(Theater theater) async {
+    final token = await _getToken();
+    if (token == null) return;
+    final response = await http.patch(
+      Uri.parse('$baseUrl/theater/update/${theater.id}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'name': theater.name,
+        'total_seats': theater.totalSeats,
+      }),
+    );
+    if (response.statusCode == 200) {
+      fetchTheaters();
+    } else {
+      final error = jsonDecode(response.body)['message'];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+
+  Future<void> deleteTheater(int id) async {
+    final token = await _getToken();
+    if (token == null) return;
+    final response = await http.delete(
+      Uri.parse('$baseUrl/theater/delete/$id'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      fetchTheaters();
+    } else {
+      final error = jsonDecode(response.body)['message'];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
 
   void _showTheaterDialog({Theater? theater}) {
     final isEditing = theater != null;
@@ -55,22 +158,17 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
               child: Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (nameController.text.isEmpty || seatsController.text.isEmpty) {
                   return;
                 }
-                setState(() {
-                  if (isEditing) {
-                    theater!.name = nameController.text;
-                    theater.totalSeats = int.tryParse(seatsController.text) ?? 0;
-                  } else {
-                    theaters.add(Theater(
-                      id: _nextId++,
-                      name: nameController.text,
-                      totalSeats: int.tryParse(seatsController.text) ?? 0,
-                    ));
-                  }
-                });
+                final name = nameController.text;
+                final totalSeats = int.tryParse(seatsController.text) ?? 0;
+                if (isEditing) {
+                  await updateTheater(Theater(id: theater!.id, name: name, totalSeats: totalSeats));
+                } else {
+                  await addTheater(name, totalSeats);
+                }
                 Navigator.of(context).pop();
               },
               child: Text(isEditing ? 'Save' : 'Add'),
@@ -81,18 +179,10 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
     );
   }
 
-  void _deleteTheater(int id) {
-    setState(() {
-      theaters.removeWhere((theater) => theater.id == id);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Admin Theater Management'),
-      ),
+      appBar: AdminAppBar(title: ''),
       body: ListView.builder(
         itemCount: theaters.length,
         itemBuilder: (context, index) {
@@ -111,7 +201,7 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
-                    onPressed: () => _deleteTheater(theater.id),
+                    onPressed: () => deleteTheater(theater.id),
                   ),
                 ],
               ),
@@ -125,21 +215,23 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
         tooltip: 'Add Theater',
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
+        currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/admin/film');
           } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/admin/seat');
+            // Sudah di halaman theater
           } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/admin/seat');
+          } else if (index == 3) {
             Navigator.pushReplacementNamed(context, '/admin/showtime');
           }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Film'),
+          BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
           BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
           BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
-          BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
         ],
         type: BottomNavigationBarType.fixed,
       ),
