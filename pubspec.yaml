@@ -9,11 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.6
-  flutter_secure_storage: ^5.0.2
+  http: ^1.4.0
+  flutter_secure_storage: ^9.2.4
   image_picker: ^1.0.4
   path: any
-  file_picker: 5.2.10
+  file_picker: 10.1.9
 
 dev_dependencies:
   flutter_test:
