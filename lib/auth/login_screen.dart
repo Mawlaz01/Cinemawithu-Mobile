@@ -15,10 +15,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _storage = FlutterSecureStorage();
   bool _loading = false;
+  bool _obscurePassword = true;
 
-  final Color primaryColor = Colors.black87;
-  final Color buttonTextColor = Colors.white;
-  final double borderRadiusValue = 12.0;
+  // Color palette
+  final Color darkBlue = const Color(0xFF0B0C2A);
+  final Color primaryBlue = const Color(0xFF007AFF);
+  final Color lightBlue = const Color(0xFF4CA1FF);
+  final Color inputBg = const Color(0xFFB0C4DE);
+  final Color white = Colors.white;
+  final Color backgroundPlate = const Color(0xFFB0C4DE); // 4th color
+  final double borderRadiusValue = 18.0;
 
   // Variabel untuk menampilkan pesan error
   String _emailError = '';
@@ -91,113 +97,153 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration buildInputDecoration(String hintText) {
     return InputDecoration(
       hintText: hintText,
+      filled: true,
+      fillColor: inputBg,
+      hintStyle: TextStyle(color: darkBlue.withOpacity(0.7)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadiusValue),
+        borderSide: BorderSide.none,
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusValue),
+        borderSide: BorderSide(color: lightBlue, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundPlate,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo_cinema.png',
-                      height: 70,
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Masuk',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Masuk dulu yuk sebelum bisa lanjut!',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 48),
-              const Text(
-                'Alamat email',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _emailController,
-                decoration: buildInputDecoration('Masukkan alamat email'),
-              ),
-              if (_emailError.isNotEmpty)
-                Text(
-                  _emailError,
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              const SizedBox(height: 20),
-              const Text(
-                'Password',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: buildInputDecoration('Masukkan password'),
-              ),
-              if (_passwordError.isNotEmpty)
-                Text(
-                  _passwordError,
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              const SizedBox(height: 32),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(borderRadiusValue),
-                    ),
-                  ),
-                  child: _loading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          'Masuk',
-                          style: TextStyle(color: buttonTextColor),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/register'),
-                  child: const Text.rich(
-                    TextSpan(
-                      text: 'Belum punya akun? ',
-                      style: TextStyle(color: Colors.grey),
-                      children: [
-                        TextSpan(
-                          text: 'Daftar',
-                          style: TextStyle(color: Colors.blue),
-                        ),
-                      ],
-                    ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 2),
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo_cinema.png',
+                    height:50,
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: darkBlue.withOpacity(0.10),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Masuk',
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0B0C2A)),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Masuk dulu yuk sebelum bisa lanjut!',
+                        style: TextStyle(fontSize: 15, color: darkBlue),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 28),
+                      const Text(
+                        'Alamat email',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _emailController,
+                        decoration: buildInputDecoration('Masukkan alamat email'),
+                        style: TextStyle(color: darkBlue),
+                      ),
+                      if (_emailError.isNotEmpty)
+                        Text(
+                          _emailError,
+                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Password',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: buildInputDecoration('Masukkan password').copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              color: darkBlue.withOpacity(0.7),
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                        style: TextStyle(color: darkBlue),
+                      ),
+                      if (_passwordError.isNotEmpty)
+                        Text(
+                          _passwordError,
+                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _loading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryBlue,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(borderRadiusValue),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: _loading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'Masuk',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: TextButton(
+                          onPressed: () => Navigator.pushNamed(context, '/register'),
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Belum punya akun? ',
+                              style: TextStyle(color: darkBlue.withOpacity(0.7)),
+                              children: [
+                                TextSpan(
+                                  text: 'Daftar',
+                                  style: TextStyle(color: primaryBlue, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
