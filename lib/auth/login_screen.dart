@@ -24,6 +24,18 @@ class _LoginScreenState extends State<LoginScreen> {
   String _emailError = '';
   String _passwordError = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _checkIfLoggedIn();
+  }
+
+  Future<void> _checkIfLoggedIn() async {
+    final token = await _storage.read(key: 'token');
+    if (token != null) {
+    }
+  }
+
   Future<void> _login() async {
     // Reset pesan error
     setState(() {
@@ -62,7 +74,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       await _storage.write(key: 'token', value: data['token']);
-      Navigator.pushReplacementNamed(context, '/');
+      if (data['role'] == 'admin') {
+        print('Redirecting to /admin/film');
+        Navigator.pushReplacementNamed(context, '/admin/film');
+      } else {
+        Navigator.pushReplacementNamed(context, '/');
+      }
     } else {
       final error = jsonDecode(response.body)['message'];
       ScaffoldMessenger.of(context).showSnackBar(
