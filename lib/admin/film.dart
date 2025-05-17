@@ -1,4 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 
 // Film model
 class Film {
@@ -9,7 +16,7 @@ class Film {
   String description;
   int durationMin;
   DateTime releaseDate;
-  String status; // 'upcoming', 'now_showing', 'ended'
+  String status;
 
   Film({
     required this.id,
@@ -21,6 +28,31 @@ class Film {
     required this.releaseDate,
     required this.status,
   });
+
+  factory Film.fromJson(Map<String, dynamic> json) {
+    return Film(
+      id: json['film_id'],
+      title: json['title'],
+      poster: json['poster'] ?? '',
+      genre: json['genre'] ?? '',
+      description: json['description'] ?? '',
+      durationMin: json['duration_min'] ?? 0,
+      releaseDate: DateTime.parse(json['release_date']),
+      status: json['status'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'poster': poster,
+      'genre': genre,
+      'description': description,
+      'duration_min': durationMin,
+      'release_date': releaseDate.toIso8601String().split('T')[0],
+      'status': status,
+    };
+  }
 }
 
 class AdminFilmPage extends StatefulWidget {
@@ -33,11 +65,93 @@ class AdminFilmPage extends StatefulWidget {
 class _AdminFilmPageState extends State<AdminFilmPage> {
   List<Film> films = [];
   int _nextId = 1;
+  final String baseUrl = 'http://localhost:3000/API';
+  final _storage = const FlutterSecureStorage();
+  Uint8List? localPosterBytes;
+  String? pickedFileName;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFilms();
+  }
+
+  Future<String?> _getToken() async {
+    return await _storage.read(key: 'token');
+  }
+
+  Future<void> fetchFilms() async {
+    final token = await _getToken();
+    if (token == null) return;
+    final response = await http.get(
+      Uri.parse('$baseUrl/film'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body)['data'];
+      setState(() {
+        films = data.map((json) => Film.fromJson(json)).toList();
+      });
+    }
+  }
+
+  Future<void> addFilm(Film film) async {
+    final token = await _getToken();
+    if (token == null) return;
+    var uri = Uri.parse('$baseUrl/film/create');
+    var request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['title'] = film.title;
+    request.fields['genre'] = film.genre;
+    request.fields['description'] = film.description;
+    request.fields['duration_min'] = film.durationMin.toString();
+    request.fields['release_date'] = film.releaseDate.toIso8601String().split('T')[0];
+    request.fields['status'] = film.status;
+    if (localPosterBytes != null && pickedFileName != null) {
+      request.files.add(http.MultipartFile.fromBytes('poster', localPosterBytes!, filename: pickedFileName));
+    }
+    var response = await request.send();
+    if (response.statusCode == 201) {
+      fetchFilms();
+    }
+  }
+
+  Future<void> updateFilm(Film film) async {
+    final token = await _getToken();
+    if (token == null) return;
+    var uri = Uri.parse('$baseUrl/film/update/${film.id}');
+    var request = http.MultipartRequest('PATCH', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['title'] = film.title;
+    request.fields['genre'] = film.genre;
+    request.fields['description'] = film.description;
+    request.fields['duration_min'] = film.durationMin.toString();
+    request.fields['release_date'] = film.releaseDate.toIso8601String().split('T')[0];
+    request.fields['status'] = film.status;
+    if (localPosterBytes != null && pickedFileName != null) {
+      request.files.add(http.MultipartFile.fromBytes('poster', localPosterBytes!, filename: pickedFileName));
+    }
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      fetchFilms();
+    }
+  }
+
+  Future<void> deleteFilm(int id) async {
+    final token = await _getToken();
+    if (token == null) return;
+    final response = await http.delete(
+      Uri.parse('$baseUrl/film/delete/$id'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      fetchFilms();
+    }
+  }
 
   void _showFilmDialog({Film? film}) {
     final isEditing = film != null;
     final titleController = TextEditingController(text: film?.title ?? '');
-    final posterController = TextEditingController(text: film?.poster ?? '');
     final genreController = TextEditingController(text: film?.genre ?? '');
     final descriptionController = TextEditingController(text: film?.description ?? '');
     final durationController = TextEditingController(text: film?.durationMin.toString() ?? '');
@@ -46,6 +160,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
 
     showDialog(
       context: context,
+      useRootNavigator: true,
       builder: (context) {
         return AlertDialog(
           title: Text(isEditing ? 'Edit Film' : 'Add Film'),
@@ -56,10 +171,6 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                 TextField(
                   controller: titleController,
                   decoration: InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                  controller: posterController,
-                  decoration: InputDecoration(labelText: 'Poster URL'),
                 ),
                 TextField(
                   controller: genreController,
@@ -110,6 +221,29 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                     }
                   },
                 ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+                        if (result != null) {
+                          setState(() {
+                            pickedFileName = result.files.first.name;
+                            localPosterBytes = result.files.first.bytes;
+                          });
+                          print('File picked: $pickedFileName');
+                        }
+                      },
+                      child: Text('Pilih Gambar'),
+                    ),
+                    SizedBox(width: 8),
+                    if (pickedFileName != null)
+                      Text(
+                        'File: $pickedFileName',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -119,37 +253,29 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
               child: Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (titleController.text.isEmpty ||
-                    posterController.text.isEmpty ||
                     genreController.text.isEmpty ||
                     descriptionController.text.isEmpty ||
                     durationController.text.isEmpty ||
                     selectedDate == null) {
                   return;
                 }
-                setState(() {
-                  if (isEditing) {
-                    film!.title = titleController.text;
-                    film.poster = posterController.text;
-                    film.genre = genreController.text;
-                    film.description = descriptionController.text;
-                    film.durationMin = int.tryParse(durationController.text) ?? 0;
-                    film.releaseDate = selectedDate!;
-                    film.status = status;
-                  } else {
-                    films.add(Film(
-                      id: _nextId++,
-                      title: titleController.text,
-                      poster: posterController.text,
-                      genre: genreController.text,
-                      description: descriptionController.text,
-                      durationMin: int.tryParse(durationController.text) ?? 0,
-                      releaseDate: selectedDate!,
-                      status: status,
-                    ));
-                  }
-                });
+                final newFilm = Film(
+                  id: film?.id ?? 0,
+                  title: titleController.text,
+                  poster: film?.poster ?? '',
+                  genre: genreController.text,
+                  description: descriptionController.text,
+                  durationMin: int.tryParse(durationController.text) ?? 0,
+                  releaseDate: selectedDate!,
+                  status: status,
+                );
+                if (isEditing) {
+                  await updateFilm(newFilm);
+                } else {
+                  await addFilm(newFilm);
+                }
                 Navigator.of(context).pop();
               },
               child: Text(isEditing ? 'Save' : 'Add'),
@@ -180,10 +306,59 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
             margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: ListTile(
               leading: film.poster.isNotEmpty
-                  ? Image.network(film.poster, width: 50, height: 80, fit: BoxFit.cover)
+                  ? Image.network(
+                      'http://localhost:3000/images/${film.poster}',
+                      width: 60,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    )
                   : Container(width: 50, height: 80, color: Colors.grey),
               title: Text(film.title),
               subtitle: Text('${film.genre} | ${film.durationMin} min | ${film.status}'),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text('Detail Film'),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (film.poster.isNotEmpty)
+                              Center(
+                                child: Image.network(
+                                  'http://localhost:3000/images/${film.poster}',
+                                  width: 120,
+                                  height: 180,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            SizedBox(height: 16),
+                            Text('Judul: ${film.title}', style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 8),
+                            Text('Genre: ${film.genre}'),
+                            SizedBox(height: 8),
+                            Text('Deskripsi: ${film.description}'),
+                            SizedBox(height: 8),
+                            Text('Durasi: ${film.durationMin} menit'),
+                            SizedBox(height: 8),
+                            Text('Rilis: ${film.releaseDate.toLocal().toString().split(' ')[0]}'),
+                            SizedBox(height: 8),
+                            Text('Status: ${film.status}'),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text('Tutup'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -193,7 +368,9 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
-                    onPressed: () => _deleteFilm(film.id),
+                    onPressed: () async {
+                      await deleteFilm(film.id);
+                    },
                   ),
                 ],
               ),
