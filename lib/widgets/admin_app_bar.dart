@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../theme.dart';
 
 class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -57,31 +58,56 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      elevation: 1,
+      elevation: 4,
+      backgroundColor: AppColors.blue,
       bottom: PreferredSize(
-        preferredSize: Size.fromHeight(1.0),
+        preferredSize: Size.fromHeight(4.0),
         child: Container(
-          color: Colors.grey[300],
-          height: 1.0,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.blue, AppColors.lightBlue],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          height: 4.0,
         ),
       ),
       title: FutureBuilder<String?>(
         future: _getAdminName(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Text(
-              'Welcome, ${snapshot.data}',
-              style: TextStyle(fontSize: 16),
+            return Row(
+              children: [
+                SizedBox(width: 10),
+                Text(
+                  'Welcome, ${snapshot.data}',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ],
             );
           }
           return SizedBox.shrink();
         },
       ),
       actions: [
-        IconButton(
-          icon: Icon(Icons.logout),
-          onPressed: () => _logout(context),
-          tooltip: 'Logout',
+        Padding(
+          padding: const EdgeInsets.only(right: 12.0),
+          child: Material(
+            color: Colors.transparent,
+            shape: CircleBorder(),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(24),
+              onTap: () => _logout(context),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Tooltip(
+                  message: 'Keluar',
+                  child: Icon(Icons.logout, color: Colors.white, size: 26),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
