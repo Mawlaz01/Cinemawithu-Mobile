@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/admin_app_bar.dart';
+import '../theme.dart';
 
 class Showtime {
   int id;
@@ -42,13 +43,15 @@ class Showtime {
 class Film {
   int id;
   String title;
+  String status;
 
-  Film({required this.id, required this.title});
+  Film({required this.id, required this.title, required this.status});
 
   factory Film.fromJson(Map<String, dynamic> json) {
     return Film(
       id: json['film_id'],
       title: json['title'],
+      status: json['status'] ?? '',
     );
   }
 }
@@ -223,7 +226,8 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
 
   void _showShowtimeDialog({Showtime? showtime}) {
     final isEditing = showtime != null;
-    int selectedFilmId = showtime?.filmId ?? (films.isNotEmpty ? films.first.id : 0);
+    final filteredFilms = films.where((film) => film.status == 'now_showing' || film.status == 'upcoming').toList();
+    int selectedFilmId = showtime?.filmId ?? (filteredFilms.isNotEmpty ? filteredFilms.first.id : 0);
     int selectedTheaterId = showtime?.theaterId ?? (theaters.isNotEmpty ? theaters.first.id : 0);
     TimeOfDay? selectedTime = showtime != null ? TimeOfDay(hour: showtime.startTime.hour, minute: showtime.startTime.minute) : null;
     final priceController = TextEditingController(text: showtime?.price.toString() ?? '');
@@ -241,7 +245,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                   children: [
                     DropdownButton<int>(
                       value: selectedFilmId,
-                      items: films
+                      items: filteredFilms
                           .map((film) => DropdownMenuItem(
                                 value: film.id,
                                 child: Text(film.title),
@@ -335,7 +339,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   }
 
   String _filmTitle(int filmId) {
-    return films.firstWhere((film) => film.id == filmId, orElse: () => Film(id: 0, title: 'Unknown')).title;
+    return films.firstWhere((film) => film.id == filmId, orElse: () => Film(id: 0, title: 'Unknown', status: '')).title;
   }
 
   String _theaterName(int theaterId) {
@@ -346,31 +350,100 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AdminAppBar(title: ''),
-      body: ListView.builder(
-        itemCount: showtimes.length,
-        itemBuilder: (context, index) {
-          final showtime = showtimes[index];
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: ListTile(
-              title: Text('${_filmTitle(showtime.filmId)} @ ${_theaterName(showtime.theaterId)}'),
-              subtitle: Text('${showtime.startTime.hour.toString().padLeft(2, '0')}:${showtime.startTime.minute.toString().padLeft(2, '0')} | Rp${showtime.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _showShowtimeDialog(showtime: showtime),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => deleteShowtime(showtime.id),
-                  ),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: showtimes.length,
+                itemBuilder: (context, index) {
+                  final showtime = showtimes[index];
+                  final filmTitle = _filmTitle(showtime.filmId);
+                  final theaterName = _theaterName(showtime.theaterId);
+                  final theaterBadgeColor = Colors.deepPurple;
+                  final priceBadgeColor = Colors.green;
+                  final time = '${showtime.startTime.hour.toString().padLeft(2, '0')}:${showtime.startTime.minute.toString().padLeft(2, '0')}';
+                  final price = 'Rp${showtime.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
+                  return Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(Icons.schedule, size: 40, color: Colors.red[400]),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  filmTitle,
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: theaterBadgeColor.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        theaterName,
+                                        style: TextStyle(color: theaterBadgeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
+                                    SizedBox(width: 4),
+                                    Text(time, style: TextStyle(fontSize: 13)),
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: priceBadgeColor.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    price,
+                                    style: TextStyle(color: priceBadgeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                onPressed: () => _showShowtimeDialog(showtime: showtime),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                onPressed: () => deleteShowtime(showtime.id),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showShowtimeDialog(),
@@ -379,6 +452,9 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
+        selectedItemColor: AppColors.blue,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/admin/film');
@@ -396,7 +472,6 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
           BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
           BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
         ],
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }
