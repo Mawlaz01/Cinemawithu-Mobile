@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/admin_app_bar.dart';
+import '../theme.dart';
 
 class Theater {
   int id;
@@ -183,31 +184,75 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AdminAppBar(title: ''),
-      body: ListView.builder(
-        itemCount: theaters.length,
-        itemBuilder: (context, index) {
-          final theater = theaters[index];
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: ListTile(
-              title: Text(theater.name),
-              subtitle: Text('Total Seats: ${theater.totalSeats}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _showTheaterDialog(theater: theater),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => deleteTheater(theater.id),
-                  ),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: theaters.length,
+                itemBuilder: (context, index) {
+                  final theater = theaters[index];
+                  final badgeColor = Colors.deepPurple;
+                  return Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(Icons.theaters, size: 40, color: Colors.deepPurple),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  theater.name,
+                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: badgeColor.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'Total Seats: ${theater.totalSeats}',
+                                    style: TextStyle(color: badgeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                onPressed: () => _showTheaterDialog(theater: theater),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                onPressed: () => deleteTheater(theater.id),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showTheaterDialog(),
@@ -216,6 +261,9 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
+        selectedItemColor: AppColors.blue,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/admin/film');
@@ -233,7 +281,6 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
           BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
           BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
         ],
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }
