@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import '../widgets/admin_app_bar.dart';
+import '../theme.dart';
 
 // Film model
 class Film {
@@ -135,6 +136,8 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
     var response = await request.send();
     if (response.statusCode == 200) {
       fetchFilms();
+      localPosterBytes = null;
+      pickedFileName = null;
     }
   }
 
@@ -304,85 +307,227 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AdminAppBar(title: ''),
-      body: ListView.builder(
-        itemCount: films.length,
-        itemBuilder: (context, index) {
-          final film = films[index];
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: ListTile(
-              leading: film.poster.isNotEmpty
-                  ? Image.network(
-                      'http://localhost:3000/images/${film.poster}',
-                      width: 60,
-                      height: 80,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(width: 50, height: 80, color: Colors.grey),
-              title: Text(film.title),
-              subtitle: Text('${film.genre} | ${film.durationMin} min | ${film.status}'),
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text('Detail Film'),
-                      content: SingleChildScrollView(
-                        child: Column(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: films.length,
+                itemBuilder: (context, index) {
+                  final film = films[index];
+                  Color statusColor;
+                  String statusLabel;
+                  switch (film.status) {
+                    case 'now_showing':
+                      statusColor = Colors.green;
+                      statusLabel = 'Now Showing';
+                      break;
+                    case 'ended':
+                      statusColor = Colors.grey;
+                      statusLabel = 'Ended';
+                      break;
+                    default:
+                      statusColor = Colors.orange;
+                      statusLabel = 'Upcoming';
+                  }
+                  return GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: Center(
+                              child: Text(
+                                film.title,
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                              ),
+                            ),
+                            content: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  if (film.poster.isNotEmpty)
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        'http://localhost:3000/images/${film.poster}',
+                                        width: 160,
+                                        height: 220,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          statusLabel,
+                                          style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.category, size: 18, color: Colors.blueGrey[700]),
+                                      SizedBox(width: 6),
+                                      Text(film.genre, style: TextStyle(fontSize: 15)),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.timer, size: 18, color: Colors.grey[700]),
+                                      SizedBox(width: 6),
+                                      Text('${film.durationMin} min', style: TextStyle(fontSize: 15)),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.calendar_today, size: 18, color: Colors.grey[700]),
+                                      SizedBox(width: 6),
+                                      Text(film.releaseDate.toLocal().toString().split(' ')[0], style: TextStyle(fontSize: 15)),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16),
+                                  Divider(),
+                                  SizedBox(height: 8),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text('Deskripsi:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    film.description,
+                                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                                    textAlign: TextAlign.justify,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text('Tutup'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (film.poster.isNotEmpty)
-                              Center(
-                                child: Image.network(
-                                  'http://localhost:3000/images/${film.poster}',
-                                  width: 120,
-                                  height: 180,
-                                  fit: BoxFit.cover,
-                                ),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: film.poster.isNotEmpty
+                                  ? Image.network(
+                                      'http://localhost:3000/images/${film.poster}',
+                                      width: 80,
+                                      height: 110,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      width: 80,
+                                      height: 110,
+                                      color: Colors.grey[300],
+                                      child: Icon(Icons.movie, size: 40, color: Colors.grey[600]),
+                                    ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          film.title,
+                                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          statusLabel,
+                                          style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    film.genre,
+                                    style: TextStyle(fontSize: 15, color: Colors.blueGrey[700]),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.timer, size: 16, color: Colors.grey[600]),
+                                      SizedBox(width: 4),
+                                      Text('${film.durationMin} min', style: TextStyle(fontSize: 13)),
+                                      SizedBox(width: 16),
+                                      Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                                      SizedBox(width: 4),
+                                      Text(film.releaseDate.toLocal().toString().split(' ')[0], style: TextStyle(fontSize: 13)),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            SizedBox(height: 16),
-                            Text('Judul: ${film.title}', style: TextStyle(fontWeight: FontWeight.bold)),
-                            SizedBox(height: 8),
-                            Text('Genre: ${film.genre}'),
-                            SizedBox(height: 8),
-                            Text('Deskripsi: ${film.description}'),
-                            SizedBox(height: 8),
-                            Text('Durasi: ${film.durationMin} menit'),
-                            SizedBox(height: 8),
-                            Text('Rilis: ${film.releaseDate.toLocal().toString().split(' ')[0]}'),
-                            SizedBox(height: 8),
-                            Text('Status: ${film.status}'),
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                  onPressed: () => _showFilmDialog(film: film),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.redAccent),
+                                  onPressed: () async {
+                                    await deleteFilm(film.id);
+                                  },
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text('Tutup'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _showFilmDialog(film: film),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () async {
-                      await deleteFilm(film.id);
-                    },
-                  ),
-                ],
+                    ),
+                  );
+                },
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showFilmDialog(),
@@ -391,6 +536,9 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
+        selectedItemColor: AppColors.blue,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 0) {
             // Sudah di halaman film
@@ -408,7 +556,6 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
           BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
           BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
         ],
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }
