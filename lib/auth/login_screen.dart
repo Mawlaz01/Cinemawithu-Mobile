@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
 
     final response = await http.post(
-      Uri.parse('http://localhost:3000/api/login'),
+      Uri.parse('http://localhost:3000/API/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': _emailController.text,
