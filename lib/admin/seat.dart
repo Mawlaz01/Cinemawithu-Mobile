@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/admin_app_bar.dart';
+import '../theme.dart';
 
 class Seat {
   int id;
@@ -261,31 +262,76 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
     print('Seat counts: ${theaters.map((t) => '${t['name']}: ${_seatCountForTheater(t['id'])}/${t['total_seats']}').join(', ')}');
     return Scaffold(
       appBar: AdminAppBar(title: ''),
-      body: ListView.builder(
-        itemCount: seats.length,
-        itemBuilder: (context, index) {
-          final seat = seats[index];
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: ListTile(
-              title: Text('${seat.seatLabel}'),
-              subtitle: Text(_theaterName(seat.theaterId)),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _showSeatDialog(seat: seat),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => deleteSeat(seat.id),
-                  ),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: seats.length,
+                itemBuilder: (context, index) {
+                  final seat = seats[index];
+                  final theaterName = _theaterName(seat.theaterId);
+                  final badgeColor = Colors.blueAccent;
+                  return Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(Icons.event_seat, size: 40, color: Colors.deepPurple),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  seat.seatLabel,
+                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: badgeColor.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    theaterName,
+                                    style: TextStyle(color: badgeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                onPressed: () => _showSeatDialog(seat: seat),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                onPressed: () => deleteSeat(seat.id),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       floatingActionButton: (theaters.isNotEmpty && theaters.any((theater) => _seatCountForTheater(theater['id']) < (theater['total_seats'] ?? 0)))
           ? FloatingActionButton(
@@ -296,6 +342,9 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
           : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
+        selectedItemColor: AppColors.blue,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/admin/film');
@@ -313,7 +362,6 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
           BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
           BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
         ],
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }
