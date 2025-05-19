@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/admin_app_bar.dart';
+import '../widgets/admin_nav_bar.dart';
 import '../theme.dart';
 
 class Showtime {
@@ -450,29 +451,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
         child: Icon(Icons.add),
         tooltip: 'Add Showtime',
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        selectedItemColor: AppColors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/admin/film');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/admin/theater');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/admin/seat');
-          } else if (index == 3) {
-            // Sudah di halaman showtime
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Film'),
-          BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
-          BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
-          BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
-        ],
-      ),
+      bottomNavigationBar: const AdminNavBar(currentIndex: 3),
     );
   }
 }
