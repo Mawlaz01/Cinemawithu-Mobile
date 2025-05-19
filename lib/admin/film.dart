@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import '../widgets/admin_app_bar.dart';
+import '../widgets/admin_nav_bar.dart';
 import '../theme.dart';
 
 // Film model
@@ -534,29 +535,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
         child: Icon(Icons.add),
         tooltip: 'Add Film',
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: AppColors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          if (index == 0) {
-            // Sudah di halaman film
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/admin/theater');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/admin/seat');
-          } else if (index == 3) {
-            Navigator.pushReplacementNamed(context, '/admin/showtime');
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Film'),
-          BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
-          BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
-          BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
-        ],
-      ),
+      bottomNavigationBar: const AdminNavBar(currentIndex: 0),
     );
   }
 }
