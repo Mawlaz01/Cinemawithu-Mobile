@@ -5,6 +5,9 @@ import 'admin/film.dart';
 import 'admin/showtime.dart';
 import 'admin/theater.dart';
 import 'admin/seat.dart';
+import 'user/filmshowing.dart';
+import 'user/filmupcoming.dart';
+import 'user/profile.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,6 +31,9 @@ class MyApp extends StatelessWidget {
         '/admin/showtime': (_) => AdminShowtimePage(),
         '/admin/theater': (_) => AdminTheaterPage(),
         '/admin/seat': (_) => AdminSeatPage(),
+        '/showing': (_) => const FilmShowingPage(),
+        '/upcoming': (_) => const FilmUpcomingPage(),
+        '/profile': (_) => const ProfilePage(),
       },
     );
   }

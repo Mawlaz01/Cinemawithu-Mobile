@@ -84,7 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Redirecting to /admin/film');
         Navigator.pushReplacementNamed(context, '/admin/film');
       } else {
-        Navigator.pushReplacementNamed(context, '/');
+        print('Redirecting to /showing');
+        Navigator.pushReplacementNamed(context, '/showing');
       }
     } else {
       final error = jsonDecode(response.body)['message'];
