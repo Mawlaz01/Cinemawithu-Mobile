@@ -10,32 +10,41 @@ class Showtime {
   int id;
   int filmId;
   int theaterId;
-  DateTime startTime;
+  DateTime date;
+  TimeOfDay time;
   double price;
 
   Showtime({
     required this.id,
     required this.filmId,
     required this.theaterId,
-    required this.startTime,
+    required this.date,
+    required this.time,
     required this.price,
   });
 
   factory Showtime.fromJson(Map<String, dynamic> json) {
+    final date = DateTime.parse(json['date']);
+    final timeParts = json['time'].split(':');
+    final indonesianDate = date.add(Duration(hours: 7));
+    
     return Showtime(
       id: json['showtime_id'],
       filmId: json['film_id'],
       theaterId: json['theater_id'],
-      startTime: DateTime.parse(json['start_time']),
+      date: indonesianDate,
+      time: TimeOfDay(hour: int.parse(timeParts[0]), minute: int.parse(timeParts[1])),
       price: double.parse(json['price'].toString()),
     );
   }
 
   Map<String, dynamic> toJson() {
+    final indonesianDate = date.subtract(Duration(hours: 7));
     return {
       'film_id': filmId,
       'theater_id': theaterId,
-      'start_time': startTime.toIso8601String(),
+      'date': indonesianDate.toIso8601String().split('T')[0],
+      'time': '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
       'price': price,
     };
   }
@@ -227,10 +236,11 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
 
   void _showShowtimeDialog({Showtime? showtime}) {
     final isEditing = showtime != null;
-    final filteredFilms = films.where((film) => film.status == 'now_showing' || film.status == 'upcoming').toList();
+    final filteredFilms = films.where((film) => film.status == 'now_showing' ).toList();
     int selectedFilmId = showtime?.filmId ?? (filteredFilms.isNotEmpty ? filteredFilms.first.id : 0);
     int selectedTheaterId = showtime?.theaterId ?? (theaters.isNotEmpty ? theaters.first.id : 0);
-    TimeOfDay? selectedTime = showtime != null ? TimeOfDay(hour: showtime.startTime.hour, minute: showtime.startTime.minute) : null;
+    DateTime selectedDate = showtime?.date ?? DateTime.now();
+    TimeOfDay? selectedTime = showtime?.time;
     final priceController = TextEditingController(text: showtime?.price.toString() ?? '');
 
     showDialog(
@@ -278,6 +288,27 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                     ),
                     Row(
                       children: [
+                        Text(selectedDate.toString().split(' ')[0]),
+                        IconButton(
+                          icon: Icon(Icons.calendar_today),
+                          onPressed: () async {
+                            final pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: selectedDate,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(Duration(days: 365)),
+                            );
+                            if (pickedDate != null) {
+                              setStateDialog(() {
+                                selectedDate = pickedDate;
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
                         Text(selectedTime == null ? 'Start Time' : selectedTime!.format(context)),
                         IconButton(
                           icon: Icon(Icons.access_time),
@@ -313,13 +344,12 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                     if (selectedTime == null || priceController.text.isEmpty) {
                       return;
                     }
-                    final now = DateTime.now();
-                    final startDateTime = DateTime(now.year, now.month, now.day, selectedTime!.hour, selectedTime!.minute);
                     final newShowtime = Showtime(
                       id: showtime?.id ?? 0,
                       filmId: selectedFilmId,
                       theaterId: selectedTheaterId,
-                      startTime: startDateTime,
+                      date: selectedDate,
+                      time: selectedTime!,
                       price: double.tryParse(priceController.text) ?? 0.0,
                     );
                     if (isEditing) {
@@ -365,7 +395,8 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                   final theaterName = _theaterName(showtime.theaterId);
                   final theaterBadgeColor = Colors.deepPurple;
                   final priceBadgeColor = Colors.green;
-                  final time = '${showtime.startTime.hour.toString().padLeft(2, '0')}:${showtime.startTime.minute.toString().padLeft(2, '0')}';
+                  final date = '${showtime.date.day.toString().padLeft(2, '0')}/${showtime.date.month.toString().padLeft(2, '0')}/${showtime.date.year}';
+                  final time = '${showtime.time.hour.toString().padLeft(2, '0')}:${showtime.time.minute.toString().padLeft(2, '0')}';
                   final price = 'Rp${showtime.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
                   return Card(
                     elevation: 5,
@@ -402,6 +433,10 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                                         style: TextStyle(color: theaterBadgeColor, fontWeight: FontWeight.bold, fontSize: 13),
                                       ),
                                     ),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.calendar_today, size: 16, color: Colors.grey[700]),
+                                    SizedBox(width: 4),
+                                    Text(date, style: TextStyle(fontSize: 13)),
                                     SizedBox(width: 10),
                                     Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
                                     SizedBox(width: 4),
