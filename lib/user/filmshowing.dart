@@ -63,69 +63,113 @@ class _FilmShowingPageState extends State<FilmShowingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UserAppBar(title: 'Now Showing'),
+      appBar: const UserAppBar(title: ''),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : showingFilms == null
               ? const Center(child: Text('Failed to load showing films'))
-              : GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.7,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: showingFilms!.length,
-                  itemBuilder: (context, index) {
-                    final film = showingFilms![index];
-                    return Card(
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
                         children: [
-                          Expanded(
-                            child: film['poster'] != null && film['poster'].isNotEmpty
-                                ? Image.network(
-                                    '$baseUrl/images/${film['poster']}',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Center(
-                                        child: Icon(Icons.error),
-                                      );
-                                    },
-                                  )
-                                : Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(
-                                      child: Icon(Icons.movie, size: 40, color: Colors.grey),
-                                    ),
-                                  ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  film['title'],
-                                  style: Theme.of(context).textTheme.titleMedium,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  film['genre'],
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
+                          Icon(Icons.local_movies, color: Color(0xFF1A4CA3)),
+                          SizedBox(width: 8),
+                          Text('Playing', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                    Expanded(
+                      child: GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.5,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                        itemCount: showingFilms!.length,
+                        itemBuilder: (context, index) {
+                          final film = showingFilms![index];
+                          return Card(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            elevation: 4,
+                            shadowColor: Colors.black12,
+                            margin: EdgeInsets.zero,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () {/* detail film */},
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                      child: Image.network(
+                                        '$baseUrl/images/${film['poster']}',
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          color: Colors.grey[300],
+                                          child: Icon(Icons.movie, size: 40, color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          film['title'] ?? '',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Color(0xFF1A237E),
+                                            letterSpacing: 0.5,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: 6),
+                                        Text(
+                                          film['genre'] ?? '',
+                                          style: TextStyle(fontSize: 13, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: 10),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: 36,
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Color(0xFF2563EB),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              padding: EdgeInsets.zero,
+                                              minimumSize: Size(0, 36),
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              visualDensity: VisualDensity.compact,
+                                              elevation: 0,
+                                            ),
+                                            onPressed: () {/* aksi beli tiket */},
+                                            child: Text('BUY TICKET', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white, letterSpacing: 1)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
       bottomNavigationBar: UserNavBar(
         currentIndex: 0, // Showing is the first tab

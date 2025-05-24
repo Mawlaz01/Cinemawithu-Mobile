@@ -13,23 +13,40 @@ class UserNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.movie),
-          label: 'Now Showing',
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Color(0xFFE0E0E0), width: 1),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.upcoming),
-          label: 'Upcoming',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: onTap,
+        selectedItemColor: Color(0xFF2563EB),
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        selectedFontSize: 14,
+        unselectedFontSize: 13,
+        iconSize: 28,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.play_circle_fill),
+            label: 'Playing',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.access_time),
+            label: 'Upcoming',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
+        elevation: 0,
+      ),
     );
   }
 } 
