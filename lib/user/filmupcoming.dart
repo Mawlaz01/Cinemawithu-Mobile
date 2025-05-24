@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/user_app_bar.dart';
 import '../widgets/user_nav_bar.dart';
+import 'detailfilm.dart';
 
 class FilmUpcomingPage extends StatefulWidget {
   const FilmUpcomingPage({Key? key}) : super(key: key);
@@ -99,7 +100,14 @@ class _FilmUpcomingPageState extends State<FilmUpcomingPage> {
                             margin: EdgeInsets.zero,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
-                              onTap: () {/* detail film */},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetailFilmPage(filmId: film['film_id'].toString()),
+                                  ),
+                                );
+                              },
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
