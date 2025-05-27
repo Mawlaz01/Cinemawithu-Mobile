@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/user_app_bar.dart';
+import 'booking.dart';
 
 class DetailFilmPage extends StatefulWidget {
   final String filmId;
@@ -193,8 +194,17 @@ class _DetailFilmPageState extends State<DetailFilmPage> {
                         elevation: 0,
                       ),
                       onPressed: () {
-                        // TODO: lanjut ke pilih bangku
-                        Navigator.pop(context);
+                        Navigator.pop(context); // Close dialog
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookingPage(
+                              filmId: widget.filmId,
+                              showtimeId: showtime['showtime_id'].toString(),
+                              maxSeat: ticketCount,
+                            ),
+                          ),
+                        );
                       },
                       child: Text('Pilih Bangku', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
