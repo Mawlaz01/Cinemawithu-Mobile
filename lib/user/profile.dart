@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/user_app_bar.dart';
 import '../widgets/user_nav_bar.dart';
+import 'history.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://localhost:3000';
+  final String baseUrl = 'http://192.168.1.21:3000';
 
   @override
   void initState() {
@@ -116,7 +117,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: ListTile(
                           leading: const Icon(Icons.receipt_long, color: Color(0xFF1A4CA3)),
                           title: const Text('Riwayat Pesanan', style: TextStyle(fontWeight: FontWeight.w600)),
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const History()),
+                            );
+                          },
                         ),
                       ),
                     ),
