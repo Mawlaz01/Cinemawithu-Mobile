@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'detail_booking.dart';
 
 class BookingPage extends StatefulWidget {
   final String filmId;
@@ -137,11 +138,39 @@ class _BookingPageState extends State<BookingPage> {
         );
 
         if (historyResponse.statusCode == 201) {
-          // Show success message and navigate back
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Booking berhasil dibuat')),
+          // Call payment endpoint
+          final paymentResponse = await http.post(
+            Uri.parse('$baseUrl/API/payment/${widget.filmId}/${widget.showtimeId}/$bookingId'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
           );
-          Navigator.pop(context, true); // Return true to indicate success
+
+          if (paymentResponse.statusCode == 200) {
+            final paymentResult = json.decode(paymentResponse.body);
+            final paymentToken = paymentResult['token'];
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Booking berhasil dibuat & payment token didapatkan')),
+            );
+            // Lanjut ke halaman detail booking
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailBooking(
+                    filmId: widget.filmId,
+                    showtimeId: widget.showtimeId,
+                    bookingId: bookingId.toString(),
+                    paymentToken: paymentToken,
+                  ),
+                ),
+              );
+            }
+          } else {
+            throw Exception('Gagal mendapatkan token pembayaran');
+          }
         } else {
           throw Exception('Failed to create booking history');
         }
@@ -296,11 +325,11 @@ class _BookingPageState extends State<BookingPage> {
             padding: const EdgeInsets.only(top: 16, bottom: 16),
             child: Center(
               child: Container(
-                width: 220,
+                width: 350,
                 height: 28,
                 decoration: BoxDecoration(
                   color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Center(
                   child: Text(
@@ -315,7 +344,7 @@ class _BookingPageState extends State<BookingPage> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                padding: const EdgeInsets.only(top: 50, left: 8, right: 8, bottom: 8),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

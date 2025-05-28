@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/user_app_bar.dart';
 import '../widgets/user_nav_bar.dart';
-import 'detailfilm.dart';
+import 'detail_film.dart';
 
 class FilmShowingPage extends StatefulWidget {
   const FilmShowingPage({Key? key}) : super(key: key);

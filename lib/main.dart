@@ -5,8 +5,8 @@ import 'admin/film.dart';
 import 'admin/showtime.dart';
 import 'admin/theater.dart';
 import 'admin/seat.dart';
-import 'user/filmshowing.dart';
-import 'user/filmupcoming.dart';
+import 'user/film_showing.dart';
+import 'user/film_upcoming.dart';
 import 'user/profile.dart';
 
 void main() {
