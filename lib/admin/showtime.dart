@@ -91,7 +91,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   List<Showtime> showtimes = [];
   List<Film> films = [];
   List<Theater> theaters = [];
-  final String baseUrl = 'http://localhost:3000/API';
+  final String baseUrl = 'http://192.168.1.21:3000/API';
   final _storage = const FlutterSecureStorage();
 
   @override

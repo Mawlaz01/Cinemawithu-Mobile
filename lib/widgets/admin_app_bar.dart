@@ -6,7 +6,7 @@ import '../theme.dart';
 
 class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final String baseUrl = 'http://localhost:3000/API';
+  final String baseUrl = 'http://192.168.1.21:3000/API';
   final _storage = const FlutterSecureStorage();
 
   AdminAppBar({Key? key, required this.title}) : super(key: key);

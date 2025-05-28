@@ -17,7 +17,7 @@ class _FilmUpcomingPageState extends State<FilmUpcomingPage> {
   List<dynamic>? upcomingFilms;
   bool isLoading = true;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://localhost:3000';
+  final String baseUrl = 'http://192.168.1.21:3000';
 
   @override
   void initState() {
