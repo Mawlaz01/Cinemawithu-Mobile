@@ -64,42 +64,109 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UserAppBar(title: 'Profile'),
+      backgroundColor: Colors.grey[100],
+      appBar: const UserAppBar(title: ''),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A237E)),
+              ),
+            )
           : userData == null
-              ? const Center(child: Text('Failed to load profile'))
+              ? const Center(
+                  child: Text(
+                    'Failed to load profile',
+                    style: TextStyle(color: Color(0xFF1A237E)),
+                  ),
+                )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF1A237E).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.person, color: Color(0xFF1A237E), size: 24),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Profile',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Color(0xFF1A237E),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-                      child: Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 3,
+                      padding: const EdgeInsets.all(16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                          padding: const EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                userData!['name'] ?? '-',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 22,
-                                  color: Color(0xFF1A237E),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
                               Row(
                                 children: [
-                                  const Icon(Icons.email, size: 18, color: Color(0xFF1A4CA3)),
-                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFF1A237E).withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(Icons.person_outline, color: Color(0xFF1A237E), size: 32),
+                                  ),
+                                  SizedBox(width: 16),
                                   Expanded(
-                                    child: Text(
-                                      userData!['email'] ?? '-',
-                                      style: const TextStyle(fontSize: 16, color: Colors.black87),
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          userData!['name'] ?? '-',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                            color: Color(0xFF1A237E),
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          userData!['email'] ?? '-',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -110,13 +177,38 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 2,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
                         child: ListTile(
-                          leading: const Icon(Icons.receipt_long, color: Color(0xFF1A4CA3)),
-                          title: const Text('Riwayat Pesanan', style: TextStyle(fontWeight: FontWeight.w600)),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          leading: Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF1A237E).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.receipt_long, color: Color(0xFF1A237E)),
+                          ),
+                          title: Text(
+                            'Riwayat Pesanan',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Color(0xFF1A237E),
+                            ),
+                          ),
+                          trailing: Icon(Icons.arrow_forward_ios, color: Color(0xFF1A237E), size: 16),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -126,48 +218,75 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    Spacer(),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SizedBox(
+                      padding: const EdgeInsets.all(16),
+                      child: Container(
                         width: double.infinity,
                         height: 48,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            elevation: 2,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF1A237E),
+                              Color(0xFF0D47A1),
+                            ],
                           ),
-                          onPressed: () async {
-                            final token = await _getToken();
-                            if (token == null) return;
-                            final response = await http.post(
-                              Uri.parse('$baseUrl/API/logout'),
-                              headers: {
-                                'Authorization': 'Bearer $token',
-                              },
-                            );
-                            if (response.statusCode == 200) {
-                              if (!mounted) return;
-                              Navigator.pushReplacementNamed(context, '/login');
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Logout gagal')),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0xFF1A237E).withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final token = await _getToken();
+                              if (token == null) return;
+                              final response = await http.post(
+                                Uri.parse('$baseUrl/API/logout'),
+                                headers: {
+                                  'Authorization': 'Bearer $token',
+                                },
                               );
-                            }
-                          },
+                              if (response.statusCode == 200) {
+                                if (!mounted) return;
+                                Navigator.pushReplacementNamed(context, '/login');
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Logout gagal')),
+                                );
+                              }
+                            },
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.logout, color: Colors.white, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
       bottomNavigationBar: UserNavBar(
-        currentIndex: 2, // Profile is the third tab
+        currentIndex: 2,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/showing');

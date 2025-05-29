@@ -170,33 +170,61 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: Text(isEditing ? 'Edit Film' : 'Add Film'),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                isEditing ? 'Edit Film' : 'Add Film',
+                style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: titleController,
-                      decoration: InputDecoration(labelText: 'Title'),
+                      decoration: InputDecoration(
+                        labelText: 'Title',
+                        labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF1A237E)),
+                        ),
+                      ),
                     ),
                     TextField(
                       controller: genreController,
-                      decoration: InputDecoration(labelText: 'Genre'),
+                      decoration: InputDecoration(
+                        labelText: 'Genre',
+                        labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF1A237E)),
+                        ),
+                      ),
                     ),
                     TextField(
                       controller: descriptionController,
-                      decoration: InputDecoration(labelText: 'Description'),
+                      decoration: InputDecoration(
+                        labelText: 'Description',
+                        labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF1A237E)),
+                        ),
+                      ),
                     ),
                     TextField(
                       controller: durationController,
-                      decoration: InputDecoration(labelText: 'Duration (min)'),
+                      decoration: InputDecoration(
+                        labelText: 'Duration (min)',
+                        labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF1A237E)),
+                        ),
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                     Row(
                       children: [
                         Text(selectedDate == null ? 'Release Date' : selectedDate!.toLocal().toString().split(' ')[0]),
                         IconButton(
-                          icon: Icon(Icons.calendar_today),
+                          icon: Icon(Icons.calendar_today, color: Color(0xFF1A237E)),
                           onPressed: () async {
                             final picked = await showDatePicker(
                               context: context,
@@ -241,7 +269,13 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                               print('File picked: $pickedFileName');
                             }
                           },
-                          child: Text('Pilih Gambar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF1A237E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text('Pilih Gambar', style: TextStyle(color: Colors.white)),
                         ),
                         SizedBox(width: 8),
                         if (pickedFileName != null)
@@ -260,7 +294,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey[800])),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -288,7 +322,13 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                     }
                     Navigator.of(context).pop();
                   },
-                  child: Text(isEditing ? 'Save' : 'Add'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1A237E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(isEditing ? 'Save' : 'Add', style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -307,7 +347,8 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdminAppBar(title: ''),
+      appBar: AdminAppBar(title: 'Film'),
+      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(
@@ -322,15 +363,15 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                   String statusLabel;
                   switch (film.status) {
                     case 'now_showing':
-                      statusColor = Colors.green;
+                      statusColor = Color(0xFF43A047);
                       statusLabel = 'Now Showing';
                       break;
                     case 'ended':
-                      statusColor = Colors.grey;
+                      statusColor = Color(0xFFD32F2F);
                       statusLabel = 'Ended';
                       break;
                     default:
-                      statusColor = Colors.orange;
+                      statusColor = Color(0xFFFFC107);
                       statusLabel = 'Upcoming';
                   }
                   return GestureDetector(
@@ -343,7 +384,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                             title: Center(
                               child: Text(
                                 film.title,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Color(0xFF1A237E)),
                               ),
                             ),
                             content: SingleChildScrollView(
@@ -381,7 +422,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.category, size: 18, color: Colors.blueGrey[700]),
+                                      Icon(Icons.category, size: 18, color: Color(0xFF1A237E)),
                                       SizedBox(width: 6),
                                       Text(film.genre, style: TextStyle(fontSize: 15)),
                                     ],
@@ -409,7 +450,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                                   SizedBox(height: 8),
                                   Align(
                                     alignment: Alignment.centerLeft,
-                                    child: Text('Deskripsi:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    child: Text('Deskripsi:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1A237E))),
                                   ),
                                   SizedBox(height: 4),
                                   Text(
@@ -423,7 +464,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: Text('Tutup'),
+                                child: Text('Tutup', style: TextStyle(color: Colors.grey[700])),
                               ),
                             ],
                           );
@@ -433,11 +474,12 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                     child: Card(
                       elevation: 5,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                       ),
+                      color: Colors.white,
                       margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -467,7 +509,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                                       Expanded(
                                         child: Text(
                                           film.title,
-                                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -487,18 +529,18 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                                   SizedBox(height: 6),
                                   Text(
                                     film.genre,
-                                    style: TextStyle(fontSize: 15, color: Colors.blueGrey[700]),
+                                    style: TextStyle(fontSize: 15, color: Color(0xFF0D47A1)),
                                   ),
                                   SizedBox(height: 8),
                                   Row(
                                     children: [
                                       Icon(Icons.timer, size: 16, color: Colors.grey[600]),
                                       SizedBox(width: 4),
-                                      Text('${film.durationMin} min', style: TextStyle(fontSize: 13)),
+                                      Text('${film.durationMin} min', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                                       SizedBox(width: 16),
                                       Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                                       SizedBox(width: 4),
-                                      Text(film.releaseDate.toLocal().toString().split(' ')[0], style: TextStyle(fontSize: 13)),
+                                      Text(film.releaseDate.toLocal().toString().split(' ')[0], style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                                     ],
                                   ),
                                 ],
@@ -508,11 +550,11 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                  icon: Icon(Icons.edit, color: Color(0xFF0D47A1)),
                                   onPressed: () => _showFilmDialog(film: film),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.redAccent),
+                                  icon: Icon(Icons.delete, color: Colors.red[400]),
                                   onPressed: () async {
                                     await deleteFilm(film.id);
                                   },
@@ -532,10 +574,19 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showFilmDialog(),
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: Color(0xFF1A237E),
         tooltip: 'Add Film',
       ),
-      bottomNavigationBar: const AdminNavBar(currentIndex: 0),
+      bottomNavigationBar: AdminNavBar(currentIndex: 0, onTap: (index) {
+        if (index == 1) {
+          Navigator.pushReplacementNamed(context, '/admin/theater');
+        } else if (index == 2) {
+          Navigator.pushReplacementNamed(context, '/admin/seat');
+        } else if (index == 3) {
+          Navigator.pushReplacementNamed(context, '/admin/showtime');
+        }
+      }),
     );
   }
 }

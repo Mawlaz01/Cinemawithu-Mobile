@@ -59,20 +59,7 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 4,
-      backgroundColor: AppColors.blue,
-      bottom: PreferredSize(
-        preferredSize: Size.fromHeight(4.0),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.blue, AppColors.lightBlue],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-          height: 4.0,
-        ),
-      ),
+      backgroundColor: const Color(0xFF1A237E),
       title: FutureBuilder<String?>(
         future: _getAdminName(),
         builder: (context, snapshot) {

@@ -81,21 +81,23 @@ class _HistoryState extends State<History> {
   Widget _buildStatusBadge(String status) {
     String label;
     Color color;
-    Color textColor = Colors.white;
+    Color textColor;
 
     switch (status) {
       case 'paid':
         label = 'Selesai';
-        color = Colors.green;
+        color = Colors.green[700]!;
+        textColor = Colors.white;
         break;
       case 'pending':
         label = 'Menunggu Pembayaran';
-        color = Colors.orange;
-        textColor = Colors.black87;
+        color = Colors.orange[700]!;
+        textColor = Colors.white;
         break;
       default:
         label = 'Gagal';
-        color = Colors.red;
+        color = Colors.red[700]!;
+        textColor = Colors.white;
         break;
     }
 
@@ -103,7 +105,7 @@ class _HistoryState extends State<History> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
@@ -120,26 +122,13 @@ class _HistoryState extends State<History> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Pesanan', style: TextStyle(color: Colors.black)),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Image.asset(
-              'assets/images/logo_cinema.png',
-              height: 32,
-            ),
-          ),
-        ],
+        title: const Text('Riwayat Pesanan'),
+        centerTitle: true,
+        elevation: 4,
+        backgroundColor: const Color(0xFF1A237E),
+        foregroundColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
@@ -178,9 +167,9 @@ class _HistoryState extends State<History> {
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            elevation: 0.5,
+                            elevation: 5,
                             margin: const EdgeInsets.only(bottom: 16),
                             child: Padding(
                               padding: const EdgeInsets.all(16),
@@ -193,9 +182,10 @@ class _HistoryState extends State<History> {
                                       Expanded(
                                         child: Text(
                                           booking['film_title'],
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
+                                            color: const Color(0xFF1A237E),
                                           ),
                                         ),
                                       ),
@@ -205,24 +195,26 @@ class _HistoryState extends State<History> {
                                   const SizedBox(height: 8),
                                   Text(
                                     booking['theater_name'],
-                                    style: const TextStyle(
-                                      color: Colors.black54,
+                                    style: TextStyle(
+                                      color: const Color(0xFF0D47A1),
                                       fontSize: 14,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     '${booking['quantity']} tiket',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
+                                      color: Colors.grey[700],
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     formatRupiah(booking['total_amount'] as num),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
+                                      color: const Color(0xFF1A237E),
                                     ),
                                   ),
                                 ],

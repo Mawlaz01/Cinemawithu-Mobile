@@ -35,6 +35,11 @@ class _DetailBookingState extends State<DetailBooking> {
   Timer? _timer;
   bool isExpired = false;
 
+  final Color primaryColor = const Color(0xFF1A237E);
+  final Color secondaryColor = const Color(0xFF0D47A1);
+  final Color backgroundColor = Colors.grey[100]!;
+  final Color surfaceColor = Colors.white;
+
   @override
   void initState() {
     super.initState();
@@ -119,31 +124,45 @@ class _DetailBookingState extends State<DetailBooking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ringkasan Pesanan', style: TextStyle(color: Colors.black)),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Image.asset(
-              'assets/images/logo_cinema.png',
-              height: 32,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryColor, secondaryColor],
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: const Text(
+              'Ringkasan Pesanan',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+            actions: const [SizedBox(width: 8)],
+          ),
+        ),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
-              ? Center(child: Text(errorMessage!))
+              ? Center(child: Text(errorMessage!, style: TextStyle(color: primaryColor)))
               : bookingData == null
                   ? const Center(child: Text('Tidak ada data booking'))
                   : Column(
@@ -151,7 +170,13 @@ class _DetailBookingState extends State<DetailBooking> {
                         // Timer Bar
                         Container(
                           width: double.infinity,
-                          color: Colors.red[400],
+                          decoration: BoxDecoration(
+                            color: Colors.red[400],
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
+                            ),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -181,13 +206,14 @@ class _DetailBookingState extends State<DetailBooking> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 8),
-                                  const Text('Detail tiket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text('Detail tiket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
                                   const SizedBox(height: 8),
                                   Card(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0.5,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    elevation: 1.5,
+                                    color: surfaceColor,
                                     child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
+                                      padding: const EdgeInsets.all(16.0),
                                       child: Row(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -213,7 +239,7 @@ class _DetailBookingState extends State<DetailBooking> {
                                               children: [
                                                 Text(
                                                   bookingData!['film']['title'],
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: primaryColor),
                                                 ),
                                                 Text(
                                                   bookingData!['showtime']['theater'],
@@ -224,41 +250,56 @@ class _DetailBookingState extends State<DetailBooking> {
                                                   '${bookingData!['showtime']['date']} - ${bookingData!['showtime']['time']}',
                                                   style: const TextStyle(fontSize: 13, color: Colors.black87),
                                                 ),
-                                                const SizedBox(height: 12),
-                                                Text(
-                                                  '${bookingData!['booking']['quantity']} Tiket',
-                                                  style: const TextStyle(fontSize: 13),
-                                                ),
-                                                Text(
-                                                  'Harga per tiket: Rp ${(bookingData!['booking']['total_amount'] / bookingData!['booking']['quantity']).toStringAsFixed(0)}',
-                                                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                                ),
-                                                Text(
-                                                  bookingData!['booking']['seats'].join(", "),
-                                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                                                ),
                                               ],
                                             ),
                                           ),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                'Rp ${(bookingData!['booking']['total_amount'] as num).toStringAsFixed(0)}',
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                              ),
-                                            ],
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Card: Pilihan Kursi (sekarang juga menampilkan harga per tiket di kanan)
+                                  Card(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    elevation: 1.5,
+                                    color: surfaceColor,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Icon(Icons.event_seat, color: Colors.grey, size: 22),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    const Text('Pilihan Kursi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                                    Text('Harga per tiket: Rp ${((bookingData!['booking']['total_amount'] / bookingData!['booking']['quantity']) as num).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 13)),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  bookingData!['booking']['seats'].join(", "),
+                                                  style: const TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
                                   const SizedBox(height: 24),
-                                  const Text('Ringkasan Harga', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text('Ringkasan Harga', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
                                   const SizedBox(height: 8),
                                   Card(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0.5,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    elevation: 1.5,
+                                    color: surfaceColor,
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
                                       child: Column(
@@ -266,8 +307,8 @@ class _DetailBookingState extends State<DetailBooking> {
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text('${bookingData!['booking']['quantity']} x Tiket'),
-                                              Text('Rp ${(bookingData!['booking']['total_amount'] as num).toStringAsFixed(0)}'),
+                                              Text('${bookingData!['booking']['quantity']} x Tiket', style: TextStyle(color: primaryColor)),
+                                              Text('Rp ${(bookingData!['booking']['total_amount'] as num).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}', style: TextStyle(color: primaryColor)),
                                             ],
                                           ),
                                           const Divider(height: 24),
@@ -275,7 +316,7 @@ class _DetailBookingState extends State<DetailBooking> {
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               const Text('Total yang harus dibayar', style: TextStyle(fontWeight: FontWeight.bold)),
-                                              Text('Rp ${(bookingData!['booking']['total_amount'] as num).toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                              Text('Rp ${(bookingData!['booking']['total_amount'] as num).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
                                             ],
                                           ),
                                         ],
@@ -296,9 +337,10 @@ class _DetailBookingState extends State<DetailBooking> {
                               height: 48,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1A237E),
+                                  backgroundColor: primaryColor,
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  elevation: 2,
                                 ),
                                 onPressed: () {
                                   final paymentUrl = 'https://app.sandbox.midtrans.com/snap/v4/redirection/${widget.paymentToken}';

@@ -177,7 +177,11 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
             final totalSeats = _totalSeatsForTheater(selectedTheaterId);
             final isFull = !isEditing && seatCount >= totalSeats && totalSeats > 0;
             return AlertDialog(
-              title: Text(isEditing ? 'Edit Seat' : 'Add Seat'),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                isEditing ? 'Edit Seat' : 'Add Seat',
+                style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -205,6 +209,10 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
                       decoration: InputDecoration(
                         labelText: 'Seat Label (e.g. A1, B2)',
                         errorText: errorText,
+                        labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF1A237E)),
+                        ),
                       ),
                       enabled: !isFull || isEditing,
                     ),
@@ -213,7 +221,7 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
                           'Kapasitas kursi sudah penuh untuk theater ini.',
-                          style: TextStyle(color: Colors.red, fontSize: 12),
+                          style: TextStyle(color: Colors.red[400], fontSize: 12),
                         ),
                       ),
                   ],
@@ -222,7 +230,7 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey[800])),
                 ),
                 ElevatedButton(
                   onPressed: (isFull && !isEditing)
@@ -242,7 +250,13 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
                           }
                           Navigator.of(context).pop();
                         },
-                  child: Text(isEditing ? 'Save' : 'Add'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1A237E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(isEditing ? 'Save' : 'Add', style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -263,6 +277,7 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
     print('Seat counts: ${theaters.map((t) => '${t['name']}: ${_seatCountForTheater(t['id'])}/${t['total_seats']}').join(', ')}');
     return Scaffold(
       appBar: AdminAppBar(title: ''),
+      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(
@@ -274,19 +289,20 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
                 itemBuilder: (context, index) {
                   final seat = seats[index];
                   final theaterName = _theaterName(seat.theaterId);
-                  final badgeColor = Colors.blueAccent;
+                  final badgeColor = Color(0xFF1A237E);
                   return Card(
                     elevation: 5,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
+                    color: Colors.white,
                     margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(Icons.event_seat, size: 40, color: Colors.deepPurple),
+                          Icon(Icons.event_seat, size: 40, color: Color(0xFF1A237E)),
                           SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -294,7 +310,7 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
                               children: [
                                 Text(
                                   seat.seatLabel,
-                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
                                 ),
                                 SizedBox(height: 6),
                                 Container(
@@ -315,11 +331,11 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                icon: Icon(Icons.edit, color: Color(0xFF0D47A1)),
                                 onPressed: () => _showSeatDialog(seat: seat),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                icon: Icon(Icons.delete, color: Colors.red[400]),
                                 onPressed: () => deleteSeat(seat.id),
                               ),
                             ],
@@ -337,11 +353,20 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
       floatingActionButton: (theaters.isNotEmpty && theaters.any((theater) => _seatCountForTheater(theater['id']) < (theater['total_seats'] ?? 0)))
           ? FloatingActionButton(
               onPressed: () => _showSeatDialog(),
-              child: Icon(Icons.add),
+              child: Icon(Icons.add, color: Colors.white),
+              backgroundColor: Color(0xFF1A237E),
               tooltip: 'Add Seat',
             )
           : null,
-      bottomNavigationBar: const AdminNavBar(currentIndex: 2),
+      bottomNavigationBar: AdminNavBar(currentIndex: 2, onTap: (index) {
+        if (index == 0) {
+          Navigator.pushReplacementNamed(context, '/admin/film');
+        } else if (index == 1) {
+          Navigator.pushReplacementNamed(context, '/admin/theater');
+        } else if (index == 3) {
+          Navigator.pushReplacementNamed(context, '/admin/showtime');
+        }
+      }),
     );
   }
 }

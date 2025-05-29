@@ -1,45 +1,90 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
 
 class AdminNavBar extends StatelessWidget {
   final int currentIndex;
+  final Function(int) onTap;
 
   const AdminNavBar({
     Key? key,
     required this.currentIndex,
+    required this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      selectedItemColor: AppColors.blue,
-      unselectedItemColor: Colors.grey,
-      type: BottomNavigationBarType.fixed,
-      onTap: (index) {
-        if (index == currentIndex) return;
-        
-        switch (index) {
-          case 0:
-            Navigator.pushReplacementNamed(context, '/admin/film');
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/admin/theater');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/admin/seat');
-            break;
-          case 3:
-            Navigator.pushReplacementNamed(context, '/admin/showtime');
-            break;
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Film'),
-        BottomNavigationBarItem(icon: Icon(Icons.theaters), label: 'Theater'),
-        BottomNavigationBarItem(icon: Icon(Icons.event_seat), label: 'Seat'),
-        BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Showtime'),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, -5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: onTap,
+          selectedItemColor: Color(0xFF1A237E),
+          unselectedItemColor: Colors.grey[400],
+          backgroundColor: Colors.white,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          iconSize: 24,
+          type: BottomNavigationBarType.fixed,
+          showUnselectedLabels: true,
+          elevation: 0,
+          items: [
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 0 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.movie),
+              ),
+              label: 'Film',
+            ),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 1 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.theaters),
+              ),
+              label: 'Theater',
+            ),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 2 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.event_seat),
+              ),
+              label: 'Seat',
+            ),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 3 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.schedule),
+              ),
+              label: 'Showtime',
+            ),
+          ],
+        ),
+      ),
     );
   }
 } 

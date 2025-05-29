@@ -26,6 +26,10 @@ class _BookingPageState extends State<BookingPage> {
   List<Map<String, dynamic>> selectedSeats = [];
   final _storage = const FlutterSecureStorage();
   final String baseUrl = 'http://192.168.1.18:3000';
+  final Color primaryColor = const Color(0xFF1A237E);
+  final Color secondaryColor = const Color(0xFF0D47A1);
+  final Color backgroundColor = Colors.grey[100]!;
+  final Color surfaceColor = Colors.white;
 
   @override
   void initState() {
@@ -222,101 +226,138 @@ class _BookingPageState extends State<BookingPage> {
     var sortedRows = seatsByRow.keys.toList()..sort();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pilih Bangku'),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryColor, secondaryColor],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: const Text('Pilih Bangku', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+        ),
       ),
+      backgroundColor: backgroundColor,
       body: Column(
         children: [
           // Header Detail Film
-          Container(
-            color: Colors.white,
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Poster
-                bookingData!['film_poster'] != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        '$baseUrl/images/${bookingData!['film_poster']}',
-                        width: 60,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 60,
-                          height: 80,
+            child: Container(
+              decoration: BoxDecoration(
+                color: surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.07),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Poster
+                  bookingData!['film_poster'] != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            '$baseUrl/images/${bookingData!['film_poster']}',
+                            width: 64,
+                            height: 90,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              width: 64,
+                              height: 90,
+                              color: Colors.grey[300],
+                              child: Icon(Icons.movie, size: 32, color: Colors.grey),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 64,
+                          height: 90,
                           color: Colors.grey[300],
                           child: Icon(Icons.movie, size: 32, color: Colors.grey),
                         ),
-                      ),
-                    )
-                  : Container(
-                      width: 60,
-                      height: 80,
-                      color: Colors.grey[300],
-                      child: Icon(Icons.movie, size: 32, color: Colors.grey),
+                  const SizedBox(width: 14),
+                  // Info Film
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          bookingData!['film_title'] ?? '-',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: primaryColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 15, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              bookingData!['showtime']['date'] ?? '-',
+                              style: const TextStyle(fontSize: 13, color: Colors.black87),
+                            ),
+                            const SizedBox(width: 10),
+                            Icon(Icons.access_time, size: 15, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              bookingData!['showtime']['time'] ?? '-',
+                              style: const TextStyle(fontSize: 13, color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, size: 15, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              bookingData!['showtime']['theater_name'] ?? '-',
+                              style: const TextStyle(fontSize: 13, color: Colors.black54),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.event_seat, size: 15, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Pilih ${widget.maxSeat} bangku',
+                              style: const TextStyle(fontSize: 13, color: Colors.black54),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                const SizedBox(width: 12),
-                // Info Film
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bookingData!['film_title'] ?? '-',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today, size: 14, color: Colors.grey[700]),
-                          const SizedBox(width: 4),
-                          Text(
-                            bookingData!['showtime']['date'] ?? '-',
-                            style: const TextStyle(fontSize: 13, color: Colors.black87),
-                          ),
-                          const SizedBox(width: 10),
-                          Icon(Icons.access_time, size: 14, color: Colors.grey[700]),
-                          const SizedBox(width: 4),
-                          Text(
-                            bookingData!['showtime']['time'] ?? '-',
-                            style: const TextStyle(fontSize: 13, color: Colors.black87),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, size: 14, color: Colors.grey[700]),
-                          const SizedBox(width: 4),
-                          Text(
-                            bookingData!['showtime']['theater_name'] ?? '-',
-                            style: const TextStyle(fontSize: 13, color: Colors.black87),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.event_seat, size: 14, color: Colors.grey[700]),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Pilih ${widget.maxSeat} bangku',
-                            style: const TextStyle(fontSize: 13, color: Colors.black87),
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const Divider(height: 1),
@@ -369,7 +410,7 @@ class _BookingPageState extends State<BookingPage> {
                                   } else if (isSelected) {
                                     color = Colors.green;
                                   } else {
-                                    color = Colors.blue;
+                                    color = primaryColor;
                                   }
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -381,6 +422,13 @@ class _BookingPageState extends State<BookingPage> {
                                         decoration: BoxDecoration(
                                           color: color,
                                           borderRadius: BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.08),
+                                              blurRadius: 2,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
                                         ),
                                         child: Center(
                                           child: Text(
@@ -411,7 +459,7 @@ class _BookingPageState extends State<BookingPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _seatLegendBox(Colors.blue, 'Tersedia'),
+                  _seatLegendBox(primaryColor, 'Tersedia'),
                   const SizedBox(width: 12),
                   _seatLegendBox(Colors.green, 'Terpilih'),
                   const SizedBox(width: 12),
@@ -422,7 +470,7 @@ class _BookingPageState extends State<BookingPage> {
           else
             Container(
               width: double.infinity,
-              color: Colors.white,
+              color: surfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,12 +487,20 @@ class _BookingPageState extends State<BookingPage> {
                     height: 44,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A237E),
+                        backgroundColor: selectedSeats.length == widget.maxSeat ? primaryColor : Colors.grey[400],
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
                       ),
-                      onPressed: _submitBooking,
-                      child: const Text('Lanjut', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      onPressed: selectedSeats.length == widget.maxSeat ? _submitBooking : null,
+                      child: Text(
+                        'Lanjut',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
