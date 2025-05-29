@@ -17,12 +17,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
 
   // Color palette
-  final Color darkBlue = const Color(0xFF0B0C2A);
-  final Color primaryBlue = const Color(0xFF007AFF);
-  final Color lightBlue = const Color(0xFF4CA1FF);
-  final Color inputBg = const Color(0xFFB0C4DE);
+  final Color primaryColor = const Color(0xFF1A237E);
+  final Color secondaryColor = const Color(0xFF0D47A1);
+  final Color inputBg = Colors.grey[100]!;
   final Color white = Colors.white;
-  final Color backgroundPlate = const Color(0xFFB0C4DE);
   final double borderRadiusValue = 18.0;
 
   Future<void> _register() async {
@@ -55,14 +53,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       hintText: hintText,
       filled: true,
       fillColor: inputBg,
-      hintStyle: TextStyle(color: darkBlue.withOpacity(0.7)),
+      hintStyle: TextStyle(color: primaryColor.withOpacity(0.7)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadiusValue),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadiusValue),
-        borderSide: BorderSide(color: lightBlue, width: 2),
+        borderSide: BorderSide(color: primaryColor, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
     );
@@ -71,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundPlate,
+      backgroundColor: const Color(0xFF1A237E),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -95,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: darkBlue.withOpacity(0.10),
+                        color: primaryColor.withOpacity(0.08),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -104,44 +102,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
+                      Text(
                         'Daftar',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: primaryColor),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Buat akun untuk pemesanan tiket nonton kamu',
-                        style: TextStyle(fontSize: 15, color: darkBlue),
+                        style: TextStyle(fontSize: 15, color: primaryColor.withOpacity(0.8)),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 28),
                       const Text(
                         'Nama Lengkap',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1A237E)),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _nameController,
                         decoration: buildInputDecoration('Masukkan nama lengkap kamu'),
-                        style: TextStyle(color: darkBlue),
+                        style: TextStyle(color: primaryColor),
                       ),
                       const SizedBox(height: 16),
                       const Text(
                         'Alamat Email',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1A237E)),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: buildInputDecoration('example@domain.com'),
-                        style: TextStyle(color: darkBlue),
+                        style: TextStyle(color: primaryColor),
                       ),
                       const SizedBox(height: 16),
                       const Text(
                         'Password',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1A237E)),
                       ),
                       const SizedBox(height: 8),
                       TextField(
@@ -151,25 +149,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Masukkan password',
                           filled: true,
                           fillColor: inputBg,
-                          hintStyle: TextStyle(color: darkBlue.withOpacity(0.7)),
+                          hintStyle: TextStyle(color: primaryColor.withOpacity(0.7)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(borderRadiusValue),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(borderRadiusValue),
-                            borderSide: BorderSide(color: lightBlue, width: 2),
+                            borderSide: BorderSide(color: primaryColor, width: 2),
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                              color: darkBlue.withOpacity(0.7),
+                              color: primaryColor.withOpacity(0.7),
                             ),
                             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                           ),
                         ),
-                        style: TextStyle(color: darkBlue),
+                        style: TextStyle(color: primaryColor),
                       ),
                       const SizedBox(height: 28),
                       SizedBox(
@@ -177,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: ElevatedButton(
                           onPressed: _loading ? null : _register,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryBlue,
+                            backgroundColor: primaryColor,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(borderRadiusValue),
@@ -201,11 +199,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: Text.rich(
                             TextSpan(
                               text: 'Sudah punya akun? ',
-                              style: TextStyle(color: darkBlue.withOpacity(0.7)),
+                              style: TextStyle(color: primaryColor.withOpacity(0.7)),
                               children: [
                                 TextSpan(
                                   text: 'Masuk',
-                                  style: TextStyle(color: primaryBlue, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),

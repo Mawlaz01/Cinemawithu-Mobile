@@ -64,20 +64,54 @@ class _FilmUpcomingPageState extends State<FilmUpcomingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: const UserAppBar(title: ''),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A237E)),
+              ),
+            )
           : upcomingFilms == null
-              ? const Center(child: Text('Failed to load upcoming films'))
+              ? const Center(
+                  child: Text(
+                    'Failed to load upcoming films',
+                    style: TextStyle(color: Color(0xFF1A237E)),
+                  ),
+                )
               : Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
                       child: Row(
                         children: [
-                          Icon(Icons.arrow_right_alt, color: Color(0xFF1A4CA3)),
-                          SizedBox(width: 8),
-                          Text('Upcoming', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF1A237E).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.access_time, color: Color(0xFF1A237E), size: 24),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Upcoming',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Color(0xFF1A237E),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -93,82 +127,120 @@ class _FilmUpcomingPageState extends State<FilmUpcomingPage> {
                         itemCount: upcomingFilms!.length,
                         itemBuilder: (context, index) {
                           final film = upcomingFilms![index];
-                          return Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            elevation: 4,
-                            shadowColor: Colors.black12,
-                            margin: EdgeInsets.zero,
-                            child: InkWell(
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DetailFilmPage(filmId: film['film_id'].toString()),
-                                  ),
-                                );
-                              },
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                                          child: Image.network(
-                                            '$baseUrl/images/${film['poster']}',
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            errorBuilder: (context, error, stackTrace) => Container(
-                                              color: Colors.grey[300],
-                                              child: Icon(Icons.movie, size: 40, color: Colors.grey),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailFilmPage(
+                                          filmId: film['film_id'].toString(),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Stack(
+                                          children: [
+                                            Image.network(
+                                              '$baseUrl/images/${film['poster']}',
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              errorBuilder: (context, error, stackTrace) => Container(
+                                                color: Colors.grey[200],
+                                                child: Icon(Icons.movie, size: 40, color: Colors.grey[400]),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          top: 10,
-                                          left: 10,
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(colors: [Color(0xFFFFE082), Color(0xFFFFC107)]),
-                                              borderRadius: BorderRadius.circular(8),
-                                              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                                            Positioned(
+                                              top: 10,
+                                              left: 10,
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      Color(0xFFFFE082),
+                                                      Color(0xFFFFC107),
+                                                    ],
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withOpacity(0.2),
+                                                      blurRadius: 4,
+                                                      offset: Offset(0, 2),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Text(
+                                                  'PRESALE',
+                                                  style: TextStyle(
+                                                    color: Color(0xFF795548),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                    letterSpacing: 1,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                            child: Text('PRESALE', style: TextStyle(color: Color(0xFF795548), fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(12),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                film['title'] ?? '',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: Color(0xFF1A237E),
+                                                  letterSpacing: 0.3,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                film['genre'] ?? '',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          film['title'] ?? '',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Color(0xFF1A237E),
-                                            letterSpacing: 0.5,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: 6),
-                                        Text(
-                                          film['genre'] ?? '',
-                                          style: TextStyle(fontSize: 13, color: Colors.grey[700], fontWeight: FontWeight.w500),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        SizedBox(height: 8),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           );
@@ -178,7 +250,7 @@ class _FilmUpcomingPageState extends State<FilmUpcomingPage> {
                   ],
                 ),
       bottomNavigationBar: UserNavBar(
-        currentIndex: 1, // Upcoming is the second tab
+        currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/showing');

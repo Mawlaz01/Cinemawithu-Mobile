@@ -22,6 +22,10 @@ class _HistoryDetailState extends State<HistoryDetail> {
   final String baseUrl = 'http://192.168.1.18:3000';
   Timer? _timer;
   Duration? _remaining;
+  final Color primaryColor = const Color(0xFF1A237E);
+  final Color secondaryColor = const Color(0xFF0D47A1);
+  final Color backgroundColor = Colors.grey[100]!;
+  final Color surfaceColor = Colors.white;
 
   @override
   void initState() {
@@ -181,7 +185,9 @@ class _HistoryDetailState extends State<HistoryDetail> {
       if (bookedAt == null || bookedAt.isEmpty) return '-';
       try {
         final dt = DateTime.parse(bookedAt);
-        return DateFormat('yyyy-MM-dd - HH:mm:ss').format(dt);
+        // Adjusting for GMT+7 if needed, assuming server time is GMT+0
+        final dtWIB = dt.add(Duration(hours: 7));
+        return DateFormat('yyyy-MM-dd - HH:mm:ss').format(dtWIB);
       } catch (e) {
         return bookedAt;
       }
@@ -190,183 +196,274 @@ class _HistoryDetailState extends State<HistoryDetail> {
     Color getPaymentStatusColor(String? status) {
       switch (status?.toLowerCase()) {
         case 'settlement':
-          return Colors.green;
+          return Colors.green[700]!;
         case 'pending':
-          return Colors.orange;
+          return Colors.orange[700]!;
         case 'expire':
         case 'cancel':
-          return Colors.red;
+          return Colors.red[700]!;
         default:
-          return Colors.grey;
+          return Colors.grey[700]!;
       }
+    }
+
+    Widget buildStatusBadge(String? status) {
+      String label = '-';
+      Color color = Colors.grey;
+      // Jika waktu pembayaran habis, status otomatis expire
+      String? effectiveStatus = status;
+      if (_remaining == Duration.zero) {
+        effectiveStatus = 'expire';
+      }
+      if (effectiveStatus != null) {
+        switch (effectiveStatus.toLowerCase()) {
+          case 'pending':
+            label = 'Menunggu Pembayaran';
+            color = Colors.amber[700]!;
+            break;
+          case 'settlement':
+            label = 'Berhasil';
+            color = Colors.green[700]!;
+            break;
+          case 'expire':
+          case 'cancel':
+            label = 'Gagal/Expired';
+            color = Colors.red[700]!;
+            break;
+          default:
+            label = effectiveStatus;
+            color = Colors.grey;
+        }
+      }
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+      );
     }
 
     Widget buildCountdown() {
       if (_remaining == null) return SizedBox();
       if (_remaining == Duration.zero) {
-        return Text('Waktu pembayaran telah habis', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold));
+        return Container(
+          margin: const EdgeInsets.only(top: 16, bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.red[700]!,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.timer_off, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text('Waktu pembayaran telah habis', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        );
       }
       String twoDigits(int n) => n.toString().padLeft(2, '0');
       final min = twoDigits(_remaining!.inMinutes.remainder(60));
       final sec = twoDigits(_remaining!.inSeconds.remainder(60));
-      return Text('Batas pembayaran: $min:$sec', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold));
+      return Container(
+        margin: const EdgeInsets.only(top: 16, bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.red[400],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.timer, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Text('Batas Waktu Pembayaran', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8),
+            Text('$min:$sec', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Riwayat', style: TextStyle(color: Colors.black)),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        title: const Text('Detail Pesanan'),
+        centerTitle: true,
+        elevation: 4,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              checkPaymentStatus();
-            },
-          ),
-        ],
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
               ? Center(child: Text(errorMessage!))
               : detail == null
                   ? const Center(child: Text('Tidak ada data'))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // STATUS & ORDER INFO
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Detail Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      const Text('Status Pesanan: ', style: TextStyle(fontSize: 15)),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green[100],
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          paymentInfo?['transaction_status']?.toUpperCase() ?? detail!['booking_status'] ?? '-',
-                                          style: TextStyle(
-                                            color: getPaymentStatusColor(paymentInfo?['transaction_status']),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Card(
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Text('Order ID: ', style: TextStyle(fontSize: 15)),
-                              SelectableText(paymentInfo?['order_id'] ?? detail!['gateway_txn_id'] ?? '-', style: const TextStyle(fontSize: 15)),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Text('Waktu pemesanan: ', style: TextStyle(fontSize: 15)),
-                              Text(paymentInfo?['transaction_time'] ?? formatWaktuPemesanan(detail!['booked_at']), style: const TextStyle(fontSize: 15)),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          const Divider(),
-                          // DETAIL TIKET
-                          const SizedBox(height: 10),
-                          const Text('Ringkasan Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 10),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (detail!['poster'] != null)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    '$baseUrl/images/${detail!['poster']}',
-                                    width: 70,
-                                    height: 90,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      width: 70,
-                                      height: 90,
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.movie, size: 32, color: Colors.grey),
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(width: 16),
-                              Expanded(
+                              color: surfaceColor,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(detail!['film_title'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-                                    Text(detail!['theater_name'] ?? '-', style: const TextStyle(fontSize: 15, color: Colors.black54)),
-                                    Text('${detail!['date'] ?? '-'} - ${detail!['time'] ?? '-'}', style: const TextStyle(fontSize: 15)),
+                                    // STATUS & ORDER INFO
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Detail Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: primaryColor)),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                Text('Status Pesanan: ', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                                buildStatusBadge(paymentInfo?['transaction_status'] ?? detail!['booking_status']),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Text('Order ID: ', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                        SelectableText(paymentInfo?['order_id'] ?? detail!['gateway_txn_id'] ?? '-', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Text('Waktu pemesanan: ', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                        Text(paymentInfo?['transaction_time'] ?? formatWaktuPemesanan(detail!['booked_at']), style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                      ],
+                                    ),
+                                    buildCountdown(),
+                                    const SizedBox(height: 18),
+                                    const Divider(),
+                                    // DETAIL TIKET
+                                    const SizedBox(height: 10),
+                                    Text('Ringkasan Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (detail!['poster'] != null)
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(8),
+                                            child: Image.network(
+                                              '$baseUrl/images/${detail!['poster']}',
+                                              width: 70,
+                                              height: 90,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) => Container(
+                                                width: 70,
+                                                height: 90,
+                                                color: Colors.grey[300],
+                                                child: Icon(Icons.movie, size: 32, color: Colors.grey[600]),
+                                              ),
+                                            ),
+                                          ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(detail!['film_title'] ?? '-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: primaryColor)),
+                                              Text(detail!['theater_name'] ?? '-', style: TextStyle(fontSize: 15, color: secondaryColor)),
+                                              Text('${detail!['date'] ?? '-'} - ${detail!['time'] ?? '-'}', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                              const SizedBox(height: 6),
+                                              Text('Kursi: ${detail!['seat_labels'] ?? '-'}', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                              Text('Jumlah Tiket: ${detail!['quantity'] ?? '-'}', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 18),
+                                    const Divider(),
+                                    // RINGKASAN HARGA
+                                    const SizedBox(height: 10),
+                                    Text('Ringkasan Harga', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Metode Pembayaran', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                        Text(paymentInfo?['payment_type']?.toUpperCase() ?? detail!['payment_method'] ?? '-', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                      ],
+                                    ),
                                     const SizedBox(height: 6),
-                                    Text('Kursi: ${detail!['seat_labels'] ?? '-'}', style: const TextStyle(fontSize: 15)),
-                                    Text('Jumlah Tiket: ${detail!['quantity'] ?? '-'}', style: const TextStyle(fontSize: 15)),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('${detail!['quantity'] ?? 0} x Tiket', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                        Text(formatRupiah(getAmount(detail?['price_per_ticket'])), style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                      ],
+                                    ),
+                                    const Divider(),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Total belanja', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
+                                        Text(formatRupiah(
+                                          paymentInfo != null && paymentInfo!['gross_amount'] != null
+                                            ? getAmount(paymentInfo!['gross_amount'])
+                                            : getAmount(detail?['total_amount'])
+                                        ), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                          const SizedBox(height: 18),
-                          const Divider(),
-                          // RINGKASAN HARGA
-                          const SizedBox(height: 10),
-                          const Text('Ringkasan Harga', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Metode Pembayaran', style: TextStyle(fontSize: 15)),
-                              Text(paymentInfo?['payment_type']?.toUpperCase() ?? detail!['payment_method'] ?? '-', style: const TextStyle(fontSize: 15)),
-                            ],
+                        ),
+                        // Tombol Lanjutkan Pembayaran
+                        if (((paymentInfo?['transaction_status'] ?? detail!['booking_status'])?.toLowerCase() == 'pending') && _remaining != Duration.zero)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            color: surfaceColor,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed: () {
+                                // TODO: Implementasi aksi lanjutkan pembayaran
+                              },
+                              child: const Text('Lanjutkan Pembayaran', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                            ),
                           ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('${detail!['quantity'] ?? 0} x Tiket', style: const TextStyle(fontSize: 15)),
-                              Text(formatRupiah(getAmount(detail?['price_per_ticket'])), style: const TextStyle(fontSize: 15)),
-                            ],
-                          ),
-                          const Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Total belanja', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              Text(formatRupiah(
-                                paymentInfo != null && paymentInfo!['gross_amount'] != null
-                                  ? getAmount(paymentInfo!['gross_amount'])
-                                  : getAmount(detail?['total_amount'])
-                              ), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            ],
-                          ),
-                          buildCountdown(),
-                        ],
-                      ),
+                      ],
                     ),
     );
   }

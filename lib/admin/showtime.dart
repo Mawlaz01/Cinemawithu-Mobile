@@ -249,7 +249,11 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: Text(isEditing ? 'Edit Showtime' : 'Add Showtime'),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                isEditing ? 'Edit Showtime' : 'Add Showtime',
+                style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -290,7 +294,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                       children: [
                         Text(selectedDate.toString().split(' ')[0]),
                         IconButton(
-                          icon: Icon(Icons.calendar_today),
+                          icon: Icon(Icons.calendar_today, color: Color(0xFF1A237E)),
                           onPressed: () async {
                             final pickedDate = await showDatePicker(
                               context: context,
@@ -311,7 +315,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                       children: [
                         Text(selectedTime == null ? 'Start Time' : selectedTime!.format(context)),
                         IconButton(
-                          icon: Icon(Icons.access_time),
+                          icon: Icon(Icons.access_time, color: Color(0xFF1A237E)),
                           onPressed: () async {
                             final pickedTime = await showTimePicker(
                               context: context,
@@ -328,7 +332,13 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                     ),
                     TextField(
                       controller: priceController,
-                      decoration: InputDecoration(labelText: 'Price'),
+                      decoration: InputDecoration(
+                        labelText: 'Price',
+                        labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF1A237E)),
+                        ),
+                      ),
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                     ),
                   ],
@@ -337,7 +347,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey[800])),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -359,7 +369,13 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                     }
                     Navigator.of(context).pop();
                   },
-                  child: Text(isEditing ? 'Save' : 'Add'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1A237E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(isEditing ? 'Save' : 'Add', style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -380,7 +396,8 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdminAppBar(title: ''),
+      appBar: AdminAppBar(title: 'Showtime'),
+      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(
@@ -393,23 +410,24 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                   final showtime = showtimes[index];
                   final filmTitle = _filmTitle(showtime.filmId);
                   final theaterName = _theaterName(showtime.theaterId);
-                  final theaterBadgeColor = Colors.deepPurple;
-                  final priceBadgeColor = Colors.green;
+                  final theaterBadgeColor = Color(0xFF1A237E);
+                  final priceBadgeColor = Color(0xFF0D47A1);
                   final date = '${showtime.date.day.toString().padLeft(2, '0')}/${showtime.date.month.toString().padLeft(2, '0')}/${showtime.date.year}';
                   final time = '${showtime.time.hour.toString().padLeft(2, '0')}:${showtime.time.minute.toString().padLeft(2, '0')}';
                   final price = 'Rp${showtime.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
                   return Card(
                     elevation: 5,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    color: Colors.white,
                     margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     child: Padding(
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(Icons.schedule, size: 40, color: Colors.red[400]),
+                          Icon(Icons.schedule, size: 40, color: Color(0xFF1A237E)),
                           SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -417,30 +435,30 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                               children: [
                                 Text(
                                   filmTitle,
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
                                 ),
                                 SizedBox(height: 6),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: theaterBadgeColor.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    theaterName,
+                                    style: TextStyle(color: theaterBadgeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                                SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: theaterBadgeColor.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        theaterName,
-                                        style: TextStyle(color: theaterBadgeColor, fontWeight: FontWeight.bold, fontSize: 13),
-                                      ),
-                                    ),
-                                    SizedBox(width: 10),
                                     Icon(Icons.calendar_today, size: 16, color: Colors.grey[700]),
                                     SizedBox(width: 4),
-                                    Text(date, style: TextStyle(fontSize: 13)),
+                                    Text(date, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                                     SizedBox(width: 10),
                                     Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
                                     SizedBox(width: 4),
-                                    Text(time, style: TextStyle(fontSize: 13)),
+                                    Text(time, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                                   ],
                                 ),
                                 SizedBox(height: 6),
@@ -462,11 +480,11 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                icon: Icon(Icons.edit, color: Color(0xFF0D47A1)),
                                 onPressed: () => _showShowtimeDialog(showtime: showtime),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                icon: Icon(Icons.delete, color: Colors.red[400]),
                                 onPressed: () => deleteShowtime(showtime.id),
                               ),
                             ],
@@ -483,10 +501,19 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showShowtimeDialog(),
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: Color(0xFF1A237E),
         tooltip: 'Add Showtime',
       ),
-      bottomNavigationBar: const AdminNavBar(currentIndex: 3),
+      bottomNavigationBar: AdminNavBar(currentIndex: 3, onTap: (index) {
+        if (index == 0) {
+          Navigator.pushReplacementNamed(context, '/admin/film');
+        } else if (index == 1) {
+          Navigator.pushReplacementNamed(context, '/admin/theater');
+        } else if (index == 2) {
+          Navigator.pushReplacementNamed(context, '/admin/seat');
+        }
+      }),
     );
   }
 }

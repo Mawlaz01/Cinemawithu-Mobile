@@ -12,19 +12,34 @@ class UserAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-      title: Padding(
-        padding: const EdgeInsets.only(top: 6, bottom: 6),
-        child: Image.asset(
-          'assets/images/logo_cinema.png',
-          height: 36,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1A237E), // Deep indigo
+            Color(0xFF0D47A1), // Darker blue
+          ],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
-      actions: actions,
-      iconTheme: const IconThemeData(color: Color(0xFF1A4CA3)),
+      child: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/logo_cinema.png',
+          height: 40,
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
     );
   }
 

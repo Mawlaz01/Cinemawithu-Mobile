@@ -14,38 +14,66 @@ class UserNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE0E0E0), width: 1),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
-        selectedItemColor: Color(0xFF2563EB),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        selectedFontSize: 14,
-        unselectedFontSize: 13,
-        iconSize: 28,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_fill),
-            label: 'Playing',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.access_time),
-            label: 'Upcoming',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, -5),
           ),
         ],
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-        elevation: 0,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: onTap,
+          selectedItemColor: Color(0xFF1A237E),
+          unselectedItemColor: Colors.grey[400],
+          backgroundColor: Colors.white,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          iconSize: 24,
+          type: BottomNavigationBarType.fixed,
+          showUnselectedLabels: true,
+          elevation: 0,
+          items: [
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 0 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.play_circle_fill),
+              ),
+              label: 'Playing',
+            ),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 1 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.access_time),
+              ),
+              label: 'Upcoming',
+            ),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: currentIndex == 2 ? Color(0xFF1A237E).withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.person),
+              ),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

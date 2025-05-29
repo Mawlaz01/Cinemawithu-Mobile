@@ -137,18 +137,34 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(isEditing ? 'Edit Theater' : 'Add Theater'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            isEditing ? 'Edit Theater' : 'Add Theater',
+            style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(labelText: 'Theater Name'),
+                  decoration: InputDecoration(
+                    labelText: 'Theater Name',
+                    labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF1A237E)),
+                    ),
+                  ),
                 ),
                 TextField(
                   controller: seatsController,
-                  decoration: InputDecoration(labelText: 'Total Seats'),
+                  decoration: InputDecoration(
+                    labelText: 'Total Seats',
+                    labelStyle: TextStyle(color: Color(0xFF1A237E)),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF1A237E)),
+                    ),
+                  ),
                   keyboardType: TextInputType.number,
                 ),
               ],
@@ -157,7 +173,7 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey[800])),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -173,7 +189,13 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
                 }
                 Navigator.of(context).pop();
               },
-              child: Text(isEditing ? 'Save' : 'Add'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF1A237E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(isEditing ? 'Save' : 'Add', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -184,7 +206,8 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdminAppBar(title: ''),
+      appBar: AdminAppBar(title: 'Theater'),
+      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(
@@ -195,19 +218,20 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
                 itemCount: theaters.length,
                 itemBuilder: (context, index) {
                   final theater = theaters[index];
-                  final badgeColor = Colors.deepPurple;
+                  final badgeColor = Color(0xFF1A237E);
                   return Card(
                     elevation: 5,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    color: Colors.white,
                     margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     child: Padding(
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(Icons.theaters, size: 40, color: Colors.deepPurple),
+                          Icon(Icons.theaters, size: 40, color: Color(0xFF1A237E)),
                           SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -215,7 +239,7 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
                               children: [
                                 Text(
                                   theater.name,
-                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
                                 ),
                                 SizedBox(height: 6),
                                 Container(
@@ -236,11 +260,11 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit, color: Colors.blueAccent),
+                                icon: Icon(Icons.edit, color: Color(0xFF0D47A1)),
                                 onPressed: () => _showTheaterDialog(theater: theater),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                icon: Icon(Icons.delete, color: Colors.red[400]),
                                 onPressed: () => deleteTheater(theater.id),
                               ),
                             ],
@@ -257,10 +281,19 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showTheaterDialog(),
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: Color(0xFF1A237E),
         tooltip: 'Add Theater',
       ),
-      bottomNavigationBar: const AdminNavBar(currentIndex: 1),
+      bottomNavigationBar: AdminNavBar(currentIndex: 1, onTap: (index) {
+        if (index == 0) {
+          Navigator.pushReplacementNamed(context, '/admin/film');
+        } else if (index == 2) {
+          Navigator.pushReplacementNamed(context, '/admin/seat');
+        } else if (index == 3) {
+          Navigator.pushReplacementNamed(context, '/admin/showtime');
+        }
+      }),
     );
   }
 }

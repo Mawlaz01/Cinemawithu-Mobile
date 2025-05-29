@@ -18,12 +18,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   // Color palette
-  final Color darkBlue = const Color(0xFF0B0C2A);
-  final Color primaryBlue = const Color(0xFF007AFF);
-  final Color lightBlue = const Color(0xFF4CA1FF);
-  final Color inputBg = const Color(0xFFB0C4DE);
+  final Color primaryColor = const Color(0xFF1A237E);
+  final Color secondaryColor = const Color(0xFF0D47A1);
+  final Color inputBg = Colors.grey[100]!;
   final Color white = Colors.white;
-  final Color backgroundPlate = const Color(0xFFB0C4DE); // 4th color
   final double borderRadiusValue = 18.0;
 
   // Variabel untuk menampilkan pesan error
@@ -100,14 +98,14 @@ class _LoginScreenState extends State<LoginScreen> {
       hintText: hintText,
       filled: true,
       fillColor: inputBg,
-      hintStyle: TextStyle(color: darkBlue.withOpacity(0.7)),
+      hintStyle: TextStyle(color: primaryColor.withOpacity(0.7)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadiusValue),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadiusValue),
-        borderSide: BorderSide(color: lightBlue, width: 2),
+        borderSide: BorderSide(color: primaryColor, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
     );
@@ -116,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundPlate,
+      backgroundColor: const Color(0xFF1A237E),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -140,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: darkBlue.withOpacity(0.10),
+                        color: primaryColor.withOpacity(0.08),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -149,27 +147,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
+                      Text(
                         'Masuk',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: primaryColor),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Masuk dulu yuk sebelum bisa lanjut!',
-                        style: TextStyle(fontSize: 15, color: darkBlue),
+                        style: TextStyle(fontSize: 15, color: primaryColor.withOpacity(0.8)),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 28),
                       const Text(
                         'Alamat email',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1A237E)),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _emailController,
                         decoration: buildInputDecoration('Masukkan alamat email'),
-                        style: TextStyle(color: darkBlue),
+                        style: TextStyle(color: primaryColor),
                       ),
                       if (_emailError.isNotEmpty)
                         Text(
@@ -179,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
                       const Text(
                         'Password',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF0B0C2A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1A237E)),
                       ),
                       const SizedBox(height: 8),
                       TextField(
@@ -189,12 +187,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                              color: darkBlue.withOpacity(0.7),
+                              color: primaryColor.withOpacity(0.7),
                             ),
                             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                           ),
                         ),
-                        style: TextStyle(color: darkBlue),
+                        style: TextStyle(color: primaryColor),
                       ),
                       if (_passwordError.isNotEmpty)
                         Text(
@@ -207,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _loading ? null : _login,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryBlue,
+                            backgroundColor: primaryColor,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(borderRadiusValue),
@@ -229,11 +227,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text.rich(
                             TextSpan(
                               text: 'Belum punya akun? ',
-                              style: TextStyle(color: darkBlue.withOpacity(0.7)),
+                              style: TextStyle(color: primaryColor.withOpacity(0.7)),
                               children: [
                                 TextSpan(
                                   text: 'Daftar',
-                                  style: TextStyle(color: primaryBlue, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
