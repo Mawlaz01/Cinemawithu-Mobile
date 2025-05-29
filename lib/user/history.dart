@@ -17,7 +17,7 @@ class _HistoryState extends State<History> {
   List<dynamic>? bookingHistory;
   String? errorMessage;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.21:3000'; // Ganti sesuai IP server Anda
+  final String baseUrl = 'http://192.168.1.18:3000'; // Ganti sesuai IP server Anda
 
   @override
   void initState() {

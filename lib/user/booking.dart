@@ -25,7 +25,7 @@ class _BookingPageState extends State<BookingPage> {
   Map<String, dynamic>? bookingData;
   List<Map<String, dynamic>> selectedSeats = [];
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.21:3000';
+  final String baseUrl = 'http://192.168.1.18:3000';
 
   @override
   void initState() {

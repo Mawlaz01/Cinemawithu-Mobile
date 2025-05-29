@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 class HistoryDetail extends StatefulWidget {
   final String bookingId;
@@ -15,9 +16,12 @@ class HistoryDetail extends StatefulWidget {
 class _HistoryDetailState extends State<HistoryDetail> {
   bool isLoading = true;
   Map<String, dynamic>? detail;
+  Map<String, dynamic>? paymentInfo;
   String? errorMessage;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.21:3000';
+  final String baseUrl = 'http://192.168.1.18:3000';
+  Timer? _timer;
+  Duration? _remaining;
 
   @override
   void initState() {
@@ -25,8 +29,59 @@ class _HistoryDetailState extends State<HistoryDetail> {
     fetchDetail();
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   Future<String?> _getToken() async {
     return await _storage.read(key: 'token');
+  }
+
+  Future<void> checkPaymentStatus() async {
+    try {
+      if (detail == null || detail!['gateway_txn_id'] == null) return;
+
+      final token = await _getToken();
+      if (token == null) return;
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/API/payment/status/${detail!['gateway_txn_id']}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          paymentInfo = data;
+        });
+      }
+    } catch (e) {
+      print('Error checking payment status: $e');
+    }
+  }
+
+  void startCountdown(DateTime bookedAt) {
+    final batasWaktu = bookedAt.add(const Duration(minutes: 10));
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final now = DateTime.now();
+      final diff = batasWaktu.difference(now);
+      if (diff.isNegative) {
+        timer.cancel();
+        setState(() {
+          _remaining = Duration.zero;
+        });
+      } else {
+        setState(() {
+          _remaining = diff;
+        });
+      }
+    });
   }
 
   Future<void> fetchDetail() async {
@@ -71,6 +126,15 @@ class _HistoryDetailState extends State<HistoryDetail> {
               detail = data['data'][0];
               isLoading = false;
             });
+            // Mulai countdown timer jika ada booked_at
+            if (detail!['booked_at'] != null) {
+              final bookedAt = DateTime.tryParse(detail!['booked_at']);
+              if (bookedAt != null) {
+                startCountdown(bookedAt);
+              }
+            }
+            // Check payment status after getting detail
+            checkPaymentStatus();
           } else {
             setState(() {
               errorMessage = 'Data tidak ditemukan';
@@ -104,6 +168,13 @@ class _HistoryDetailState extends State<HistoryDetail> {
     return 'Rp. ${formatter.format(amount)}';
   }
 
+  num getAmount(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value;
+    if (value is String) return num.tryParse(value) ?? 0;
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     String formatWaktuPemesanan(String? bookedAt) {
@@ -115,6 +186,32 @@ class _HistoryDetailState extends State<HistoryDetail> {
         return bookedAt;
       }
     }
+
+    Color getPaymentStatusColor(String? status) {
+      switch (status?.toLowerCase()) {
+        case 'settlement':
+          return Colors.green;
+        case 'pending':
+          return Colors.orange;
+        case 'expire':
+        case 'cancel':
+          return Colors.red;
+        default:
+          return Colors.grey;
+      }
+    }
+
+    Widget buildCountdown() {
+      if (_remaining == null) return SizedBox();
+      if (_remaining == Duration.zero) {
+        return Text('Waktu pembayaran telah habis', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold));
+      }
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      final min = twoDigits(_remaining!.inMinutes.remainder(60));
+      final sec = twoDigits(_remaining!.inSeconds.remainder(60));
+      return Text('Batas pembayaran: $min:$sec', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Riwayat', style: TextStyle(color: Colors.black)),
@@ -126,6 +223,14 @@ class _HistoryDetailState extends State<HistoryDetail> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              checkPaymentStatus();
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       body: isLoading
@@ -158,8 +263,12 @@ class _HistoryDetailState extends State<HistoryDetail> {
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Text(
-                                          detail!['booking_status'] ?? '-',
-                                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13),
+                                          paymentInfo?['transaction_status']?.toUpperCase() ?? detail!['booking_status'] ?? '-',
+                                          style: TextStyle(
+                                            color: getPaymentStatusColor(paymentInfo?['transaction_status']),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -172,13 +281,13 @@ class _HistoryDetailState extends State<HistoryDetail> {
                           Row(
                             children: [
                               const Text('Order ID: ', style: TextStyle(fontSize: 15)),
-                              SelectableText(detail!['gateway_txn_id'] ?? '-', style: const TextStyle(fontSize: 15)),
+                              SelectableText(paymentInfo?['order_id'] ?? detail!['gateway_txn_id'] ?? '-', style: const TextStyle(fontSize: 15)),
                             ],
                           ),
                           Row(
                             children: [
                               const Text('Waktu pemesanan: ', style: TextStyle(fontSize: 15)),
-                              Text(formatWaktuPemesanan(detail!['booked_at']), style: const TextStyle(fontSize: 15)),
+                              Text(paymentInfo?['transaction_time'] ?? formatWaktuPemesanan(detail!['booked_at']), style: const TextStyle(fontSize: 15)),
                             ],
                           ),
                           const SizedBox(height: 18),
@@ -232,7 +341,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('Metode Pembayaran', style: TextStyle(fontSize: 15)),
-                              Text(detail!['payment_method'] ?? '-', style: const TextStyle(fontSize: 15)),
+                              Text(paymentInfo?['payment_type']?.toUpperCase() ?? detail!['payment_method'] ?? '-', style: const TextStyle(fontSize: 15)),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -240,7 +349,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('${detail!['quantity'] ?? 0} x Tiket', style: const TextStyle(fontSize: 15)),
-                              Text(formatRupiah(detail!['price_per_ticket'] ?? 0), style: const TextStyle(fontSize: 15)),
+                              Text(formatRupiah(getAmount(detail?['price_per_ticket'])), style: const TextStyle(fontSize: 15)),
                             ],
                           ),
                           const Divider(),
@@ -248,9 +357,14 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('Total belanja', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              Text(formatRupiah(detail!['total_amount'] ?? 0), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              Text(formatRupiah(
+                                paymentInfo != null && paymentInfo!['gross_amount'] != null
+                                  ? getAmount(paymentInfo!['gross_amount'])
+                                  : getAmount(detail?['total_amount'])
+                              ), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             ],
                           ),
+                          buildCountdown(),
                         ],
                       ),
                     ),
