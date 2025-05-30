@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'film_showing.dart';
 
 class PaymentsPage extends StatefulWidget {
   final String paymentUrl;
@@ -17,6 +18,18 @@ class _PaymentsPageState extends State<PaymentsPage> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            if (url.contains('status_code=200') || url.contains('transaction_status=settlement')) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => FilmShowingPage()),
+                (route) => false,
+              );
+            }
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(widget.paymentUrl));
   }
 

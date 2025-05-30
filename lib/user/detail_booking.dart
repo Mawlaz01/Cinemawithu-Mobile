@@ -168,36 +168,37 @@ class _DetailBookingState extends State<DetailBooking> {
                   : Column(
                       children: [
                         // Timer Bar
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.red[400],
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
+                        if (bookingData!['booking']['payment_status']?.toLowerCase() == 'pending' && !isExpired)
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.red[400],
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(16),
+                                bottomRight: Radius.circular(16),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Segera bayar dalam',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time, color: Colors.white, size: 20),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      timerText,
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Segera bayar dalam',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                              Row(
-                                children: [
-                                  const Icon(Icons.access_time, color: Colors.white, size: 20),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    timerText,
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
                         Expanded(
                           child: SingleChildScrollView(
                             child: Padding(
