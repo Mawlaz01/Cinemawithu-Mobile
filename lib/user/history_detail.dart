@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import 'payments.dart';
 
 class HistoryDetail extends StatefulWidget {
   final String bookingId;
@@ -265,6 +266,8 @@ class _HistoryDetailState extends State<HistoryDetail> {
     }
 
     Widget buildCountdown() {
+      // Tampilkan timer hanya jika status pembayaran pending
+      if (detail == null || (detail!['payment_status']?.toLowerCase() != 'pending')) return SizedBox();
       if (_remaining == null || _remaining == Duration.zero) return SizedBox();
       String twoDigits(int n) => n.toString().padLeft(2, '0');
       final min = twoDigits(_remaining!.inMinutes.remainder(60));
@@ -461,8 +464,23 @@ class _HistoryDetailState extends State<HistoryDetail> {
                                 ),
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                               ),
-                              onPressed: () {
-                                // TODO: Implementasi aksi lanjutkan pembayaran
+                              onPressed: () async {
+                                final storage = FlutterSecureStorage();
+                                final redirectUrl = await storage.read(key: 'redirect_url_${widget.bookingId}');
+                                if (redirectUrl != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentsPage(
+                                        paymentUrl: redirectUrl,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('URL pembayaran tidak ditemukan. Silakan booking ulang.')),
+                                  );
+                                }
                               },
                               child: const Text('Lanjutkan Pembayaran', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                             ),
