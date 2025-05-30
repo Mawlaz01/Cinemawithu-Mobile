@@ -210,31 +210,43 @@ class _HistoryDetailState extends State<HistoryDetail> {
     Widget buildStatusBadge(String? status) {
       String label = '-';
       Color color = Colors.grey;
-      // Jika waktu pembayaran habis, status otomatis expire
-      String? effectiveStatus = status;
-      if (_remaining == Duration.zero) {
-        effectiveStatus = 'expire';
-      }
-      if (effectiveStatus != null) {
-        switch (effectiveStatus.toLowerCase()) {
+      
+      if (status != null) {
+        switch (status.toLowerCase()) {
           case 'pending':
             label = 'Menunggu Pembayaran';
-            color = Colors.amber[700]!;
+            color = Colors.orange[700]!;
             break;
           case 'settlement':
             label = 'Berhasil';
             color = Colors.green[700]!;
             break;
-          case 'expire':
-          case 'cancel':
-            label = 'Gagal/Expired';
+          case 'expired':
+            label = 'Kadaluarsa';
+            color = Colors.red[700]!;
+            break;
+          case 'cancelled':
+            label = 'Dibatalkan';
             color = Colors.red[700]!;
             break;
           default:
-            label = effectiveStatus;
+            label = status;
             color = Colors.grey;
         }
       }
+
+      // Check if the booking is expired based on time
+      if (detail != null && detail!['booked_at'] != null) {
+        final bookedAt = DateTime.tryParse(detail!['booked_at']);
+        if (bookedAt != null) {
+          final batasWaktu = bookedAt.add(const Duration(minutes: 10));
+          if (DateTime.now().isAfter(batasWaktu) && status?.toLowerCase() == 'pending') {
+            label = 'Expired';
+            color = Colors.red[700]!;
+          }
+        }
+      }
+
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -253,25 +265,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
     }
 
     Widget buildCountdown() {
-      if (_remaining == null) return SizedBox();
-      if (_remaining == Duration.zero) {
-        return Container(
-          margin: const EdgeInsets.only(top: 16, bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.red[700]!,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.timer_off, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text('Waktu pembayaran telah habis', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ],
-          ),
-        );
-      }
+      if (_remaining == null || _remaining == Duration.zero) return SizedBox();
       String twoDigits(int n) => n.toString().padLeft(2, '0');
       final min = twoDigits(_remaining!.inMinutes.remainder(60));
       final sec = twoDigits(_remaining!.inSeconds.remainder(60));
@@ -306,6 +300,14 @@ class _HistoryDetailState extends State<HistoryDetail> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () {
+              checkPaymentStatus();
+            },
+          ),
+        ],
       ),
       backgroundColor: backgroundColor,
       body: isLoading
@@ -341,8 +343,8 @@ class _HistoryDetailState extends State<HistoryDetail> {
                                             const SizedBox(height: 8),
                                             Row(
                                               children: [
-                                                Text('Status Pesanan: ', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
-                                                buildStatusBadge(paymentInfo?['transaction_status'] ?? detail!['booking_status']),
+                                                Text('Status Pembayaran: ', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                                buildStatusBadge(detail!['payment_status']),
                                               ],
                                             ),
                                           ],
@@ -410,13 +412,15 @@ class _HistoryDetailState extends State<HistoryDetail> {
                                     const SizedBox(height: 10),
                                     Text('Ringkasan Harga', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
                                     const SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Metode Pembayaran', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
-                                        Text(paymentInfo?['payment_type']?.toUpperCase() ?? detail!['payment_method'] ?? '-', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
-                                      ],
-                                    ),
+                                    // Tampilkan baris metode pembayaran hanya jika bukan 'unspecified', null, atau kosong
+                                    if ((paymentInfo?['payment_type']?.toLowerCase() ?? detail!['payment_method']?.toLowerCase() ?? '') != 'unspecified' && (paymentInfo?['payment_type'] ?? detail!['payment_method'] ?? '').toString().isNotEmpty)
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text('Metode Pembayaran', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                          Text(paymentInfo?['payment_type']?.toUpperCase() ?? detail!['payment_method'] ?? '-', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                        ],
+                                      ),
                                     const SizedBox(height: 6),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -444,7 +448,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
                           ),
                         ),
                         // Tombol Lanjutkan Pembayaran
-                        if (((paymentInfo?['transaction_status'] ?? detail!['booking_status'])?.toLowerCase() == 'pending') && _remaining != Duration.zero)
+                        if (detail!['payment_status']?.toLowerCase() == 'pending' && _remaining != Duration.zero)
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

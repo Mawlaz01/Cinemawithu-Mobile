@@ -156,7 +156,7 @@ class _BookingPageState extends State<BookingPage> {
             final paymentToken = paymentResult['token'];
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Booking berhasil dibuat & payment token didapatkan')),
+              const SnackBar(content: Text('Booking berhasil dibuat')),
             );
             // Lanjut ke halaman detail booking
             if (mounted) {
