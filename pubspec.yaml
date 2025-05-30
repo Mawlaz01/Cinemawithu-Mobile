@@ -18,7 +18,9 @@ dependencies:
   shared_preferences: ^2.2.2
   webview_flutter: ^4.2.2
   webview_flutter_android: ^3.10.2
+  webview_windows: ^0.2.0
   intl: ^0.20.2
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
