@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/url_api.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.18:3000/API/login'),
+      Uri.parse('${UrlApi.baseUrl}/API/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': _emailController.text,

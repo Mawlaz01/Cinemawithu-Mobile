@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/url_api.dart';
 import 'detail_booking.dart';
 
 class BookingPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _BookingPageState extends State<BookingPage> {
   Map<String, dynamic>? bookingData;
   List<Map<String, dynamic>> selectedSeats = [];
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.18:3000';
+  final String baseUrl = UrlApi.baseUrl;
   final Color primaryColor = const Color(0xFF1A237E);
   final Color secondaryColor = const Color(0xFF0D47A1);
   final Color backgroundColor = Colors.grey[100]!;

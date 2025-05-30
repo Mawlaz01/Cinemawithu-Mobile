@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import '../config/url_api.dart';
 import 'history_detail.dart';
 
 class History extends StatefulWidget {
@@ -17,7 +18,7 @@ class _HistoryState extends State<History> {
   List<dynamic>? bookingHistory;
   String? errorMessage;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.18:3000'; // Ganti sesuai IP server Anda
+  final String baseUrl = UrlApi.baseUrl; // Ganti sesuai IP server Anda
 
   @override
   void initState() {

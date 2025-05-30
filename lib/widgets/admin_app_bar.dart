@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/url_api.dart';
 import '../theme.dart';
 
 class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final String baseUrl = 'http://192.168.1.18:3000/API';
+  final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
 
   AdminAppBar({Key? key, required this.title}) : super(key: key);

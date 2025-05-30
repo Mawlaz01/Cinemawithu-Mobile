@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import '../config/url_api.dart';
 import 'payments.dart';
 
 class HistoryDetail extends StatefulWidget {
@@ -20,7 +21,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
   Map<String, dynamic>? paymentInfo;
   String? errorMessage;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.18:3000';
+  final String baseUrl = UrlApi.baseUrl;
   Timer? _timer;
   Duration? _remaining;
   final Color primaryColor = const Color(0xFF1A237E);
@@ -350,6 +351,13 @@ class _HistoryDetailState extends State<HistoryDetail> {
                                                 buildStatusBadge(detail!['payment_status']),
                                               ],
                                             ),
+                                            if ((paymentInfo?['settlement_time'] ?? '').toString().isNotEmpty)
+                                              Row(
+                                                children: [
+                                                  Text('Waktu dibayar: ', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
+                                                  Text(paymentInfo?['settlement_time'], style: TextStyle(fontSize: 15, color: Colors.green[800])),
+                                                ],
+                                              ),
                                           ],
                                         ),
                                       ],

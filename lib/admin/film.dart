@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import '../config/url_api.dart';
 import '../widgets/admin_app_bar.dart';
 import '../widgets/admin_nav_bar.dart';
 import '../theme.dart';
@@ -68,7 +69,7 @@ class AdminFilmPage extends StatefulWidget {
 class _AdminFilmPageState extends State<AdminFilmPage> {
   List<Film> films = [];
   int _nextId = 1;
-  final String baseUrl = 'http://192.168.1.18:3000/API';
+  final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
   Uint8List? localPosterBytes;
   String? pickedFileName;
@@ -395,7 +396,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
                                       child: Image.network(
-                                        'http://192.168.1.18:3000/images/${film.poster}',
+                                        '${UrlApi.baseUrl}/images/${film.poster}',
                                         width: 160,
                                         height: 220,
                                         fit: BoxFit.cover,
@@ -487,7 +488,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
                               borderRadius: BorderRadius.circular(12),
                               child: film.poster.isNotEmpty
                                   ? Image.network(
-                                      'http://192.168.1.18:3000/images/${film.poster}',
+                                      '${UrlApi.baseUrl}/images/${film.poster}',
                                       width: 80,
                                       height: 110,
                                       fit: BoxFit.cover,

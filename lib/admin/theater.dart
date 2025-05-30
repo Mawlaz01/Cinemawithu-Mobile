@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/url_api.dart';
 import '../widgets/admin_app_bar.dart';
 import '../widgets/admin_nav_bar.dart';
 import '../theme.dart';
@@ -35,7 +36,7 @@ class AdminTheaterPage extends StatefulWidget {
 
 class _AdminTheaterPageState extends State<AdminTheaterPage> {
   List<Theater> theaters = [];
-  final String baseUrl = 'http://192.168.1.18:3000/API';
+  final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
 
   @override
