@@ -414,7 +414,14 @@ class _BookingPageState extends State<BookingPage> {
                                   bool isAvailable = seat['is_available'] == true;
                                   Color color;
                                   if (!isAvailable) {
-                                    color = Colors.red;
+                                    // Check if the seat is in pending status
+                                    if (seat['booking_status'] == 'pending') {
+                                      color = Colors.red; // Warna oranye untuk kursi yang sedang dalam proses booking
+                                    } else if (seat['booking_status'] == 'expired' || seat['booking_status'] == 'cancelled') {
+                                      color = primaryColor; // Kembali ke warna biru jika expired/cancelled
+                                    } else {
+                                      color = Colors.red; // Warna merah untuk kursi yang sudah dibayar
+                                    }
                                   } else if (isSelected) {
                                     color = Colors.green;
                                   } else {
@@ -473,6 +480,7 @@ class _BookingPageState extends State<BookingPage> {
                   const SizedBox(width: 12),
                   _seatLegendBox(Colors.green, 'Terpilih'),
                   const SizedBox(width: 12),
+
                   _seatLegendBox(Colors.red, 'Terisi'),
                 ],
               ),

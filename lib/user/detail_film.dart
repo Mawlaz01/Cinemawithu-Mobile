@@ -90,7 +90,7 @@ class _DetailFilmPageState extends State<DetailFilmPage> {
     if (parts.length >= 2) {
       // Convert to Indonesian time (UTC+7)
       int hour = int.parse(parts[0]);
-      hour = (hour + 7) % 24; // Add 7 hours and handle overflow
+      // No need to add 7 hours since the time from API is already in WIB
       return '${hour.toString().padLeft(2, '0')}.${parts[1]}';
     }
     return timeStr;
