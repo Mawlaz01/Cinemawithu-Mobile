@@ -154,6 +154,11 @@ class _BookingPageState extends State<BookingPage> {
           if (paymentResponse.statusCode == 200) {
             final paymentResult = json.decode(paymentResponse.body);
             final paymentToken = paymentResult['token'];
+            // Ambil redirect_url dari midtransResponse
+            final midtransResponse = json.decode(paymentResult['dataPayment']['midtransResponse']);
+            final redirectUrl = midtransResponse['redirect_url'];
+            // Simpan redirect_url ke secure storage dengan key bookingId
+            await _storage.write(key: 'redirect_url_${bookingId.toString()}', value: redirectUrl);
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Booking berhasil dibuat')),

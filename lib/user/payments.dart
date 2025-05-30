@@ -23,7 +23,11 @@ class _PaymentsPageState extends State<PaymentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pembayaran')),
+      appBar: AppBar(
+        title: const Text('Pembayaran'),
+        backgroundColor: const Color(0xFF1A237E),
+        foregroundColor: Colors.white,
+      ),
       body: WebViewWidget(controller: _controller),
     );
   }
