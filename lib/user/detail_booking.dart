@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:async';
+import '../config/url_api.dart';
 import 'payments.dart';
 
 class DetailBooking extends StatefulWidget {
@@ -28,7 +29,7 @@ class _DetailBookingState extends State<DetailBooking> {
   Map<String, dynamic>? bookingData;
   String? errorMessage;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.18:3000';
+  final String baseUrl = UrlApi.baseUrl;
 
   // Timer
   Duration _duration = const Duration(minutes: 10);
@@ -168,37 +169,36 @@ class _DetailBookingState extends State<DetailBooking> {
                   : Column(
                       children: [
                         // Timer Bar
-                        if (bookingData!['booking']['payment_status']?.toLowerCase() == 'pending' && !isExpired)
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.red[400],
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(16),
-                                bottomRight: Radius.circular(16),
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Segera bayar dalam',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.access_time, color: Colors.white, size: 20),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      timerText,
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.red[400],
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
                             ),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Segera bayar dalam',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.access_time, color: Colors.white, size: 20),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    timerText,
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                         Expanded(
                           child: SingleChildScrollView(
                             child: Padding(

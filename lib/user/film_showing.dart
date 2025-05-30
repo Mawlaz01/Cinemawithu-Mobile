@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/url_api.dart';
 import '../widgets/user_app_bar.dart';
 import '../widgets/user_nav_bar.dart';
 import 'detail_film.dart';
@@ -17,7 +18,7 @@ class _FilmShowingPageState extends State<FilmShowingPage> {
   List<dynamic>? showingFilms;
   bool isLoading = true;
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.1.18:3000';
+  final String baseUrl = UrlApi.baseUrl;
 
   @override
   void initState() {
