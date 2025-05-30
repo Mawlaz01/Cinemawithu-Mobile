@@ -395,13 +395,15 @@ class _BookingPageState extends State<BookingPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            for (var seat in (seatsByRow[row]!..sort((a, b) {
-                              int numA = int.parse(a['seat_label'].substring(1));
-                              int numB = int.parse(b['seat_label'].substring(1));
-                              return numA.compareTo(numB);
-                            })))
+                            for (int i = 0; i < seatsByRow[row]!.length; i++) ...[
                               Builder(
                                 builder: (context) {
+                                  var sortedSeats = seatsByRow[row]!..sort((a, b) {
+                                    int numA = int.parse(a['seat_label'].substring(1));
+                                    int numB = int.parse(b['seat_label'].substring(1));
+                                    return numA.compareTo(numB);
+                                  });
+                                  var seat = sortedSeats[i];
                                   bool isSelected = selectedSeats.any((s) => s['seat_id'] == seat['seat_id']);
                                   bool isAvailable = seat['is_available'] == true;
                                   Color color;
@@ -443,7 +445,9 @@ class _BookingPageState extends State<BookingPage> {
                                     ),
                                   );
                                 },
-                              )
+                              ),
+                              if (i == 3) SizedBox(width: 28), // Tambahkan jarak setelah kursi ke-3
+                            ]
                           ],
                         ),
                       ),
@@ -455,7 +459,7 @@ class _BookingPageState extends State<BookingPage> {
           // Legend/tombol lanjut di bawah grid
           if (selectedSeats.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
