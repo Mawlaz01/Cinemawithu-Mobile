@@ -86,6 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Redirecting to /showing');
         Navigator.pushReplacementNamed(context, '/showing');
       }
+    } else if (response.statusCode == 429) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terlalu banyak percobaan login. Silakan coba lagi nanti.')),
+      );
     } else {
       final error = jsonDecode(response.body)['message'];
       ScaffoldMessenger.of(context).showSnackBar(
