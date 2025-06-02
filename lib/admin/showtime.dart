@@ -8,7 +8,7 @@ import '../widgets/admin_nav_bar.dart';
 import '../theme.dart';
 
 class Showtime {
-  int id;
+  int showtimeId;
   int filmId;
   int theaterId;
   DateTime date;
@@ -16,7 +16,7 @@ class Showtime {
   double price;
 
   Showtime({
-    required this.id,
+    required this.showtimeId,
     required this.filmId,
     required this.theaterId,
     required this.date,
@@ -27,24 +27,24 @@ class Showtime {
   factory Showtime.fromJson(Map<String, dynamic> json) {
     final date = DateTime.parse(json['date']);
     final timeParts = json['time'].split(':');
-    final indonesianDate = date.add(Duration(hours: 7));
+    final wibDate = date.add(Duration(hours: 7));
     
     return Showtime(
-      id: json['showtime_id'],
+      showtimeId: json['showtime_id'],
       filmId: json['film_id'],
       theaterId: json['theater_id'],
-      date: indonesianDate,
+      date: wibDate,
       time: TimeOfDay(hour: int.parse(timeParts[0]), minute: int.parse(timeParts[1])),
       price: double.parse(json['price'].toString()),
     );
   }
 
   Map<String, dynamic> toJson() {
-    final indonesianDate = date.subtract(Duration(hours: 7));
+    final utcDate = date.subtract(Duration(hours: 7));
     return {
       'film_id': filmId,
       'theater_id': theaterId,
-      'date': indonesianDate.toIso8601String().split('T')[0],
+      'date': utcDate.toIso8601String().split('T')[0],
       'time': '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
       'price': price,
     };
@@ -52,31 +52,44 @@ class Showtime {
 }
 
 class Film {
-  int id;
+  int filmId;
   String title;
   String status;
+  int durationMin;
 
-  Film({required this.id, required this.title, required this.status});
+  Film({
+    required this.filmId,
+    required this.title,
+    required this.status,
+    required this.durationMin,
+  });
 
   factory Film.fromJson(Map<String, dynamic> json) {
     return Film(
-      id: json['film_id'],
+      filmId: json['film_id'],
       title: json['title'],
       status: json['status'] ?? '',
+      durationMin: json['duration_min'] ?? 0,
     );
   }
 }
 
 class Theater {
-  int id;
+  int theaterId;
   String name;
+  int totalSeats;
 
-  Theater({required this.id, required this.name});
+  Theater({
+    required this.theaterId,
+    required this.name,
+    required this.totalSeats,
+  });
 
   factory Theater.fromJson(Map<String, dynamic> json) {
     return Theater(
-      id: json['theater_id'],
+      theaterId: json['theater_id'],
       name: json['name'],
+      totalSeats: json['total_seats'],
     );
   }
 }
@@ -94,6 +107,118 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   List<Theater> theaters = [];
   final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
+
+  Future<int> _getFilmDuration(int filmId) async {
+    final film = films.firstWhere((f) => f.filmId == filmId);
+    return film.durationMin;
+  }
+
+  bool _isShowtimePassed(Showtime showtime) {
+    final now = DateTime.now();
+    final showtimeDateTime = DateTime(
+      showtime.date.year,
+      showtime.date.month,
+      showtime.date.day,
+      showtime.time.hour,
+      showtime.time.minute,
+    );
+    return now.isAfter(showtimeDateTime);
+  }
+
+  Future<bool> _hasScheduleConflict(Showtime newShowtime, {int? excludeShowtimeId}) async {
+    final filmDuration = await _getFilmDuration(newShowtime.filmId);
+    final newShowtimeStart = DateTime(
+      newShowtime.date.year,
+      newShowtime.date.month,
+      newShowtime.date.day,
+      newShowtime.time.hour,
+      newShowtime.time.minute,
+    );
+    final newShowtimeEnd = newShowtimeStart.add(Duration(minutes: filmDuration));
+
+    // Validasi waktu mulai tidak boleh di masa lalu
+    if (newShowtimeStart.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Waktu mulai tidak boleh di masa lalu!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return true;
+    }
+
+    // Validasi durasi film minimal 30 menit
+    if (filmDuration < 30) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Durasi film minimal 30 menit!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return true;
+    }
+
+    // Validasi waktu mulai tidak boleh lebih dari 30 hari ke depan
+    if (newShowtimeStart.isAfter(DateTime.now().add(Duration(days: 30)))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Jadwal tidak boleh lebih dari 30 hari ke depan!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return true;
+    }
+
+    // Validasi waktu mulai harus antara jam 08:00 - 22:00
+    if (newShowtime.time.hour < 8 || newShowtime.time.hour >= 22) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Jadwal harus antara jam 08:00 - 22:00!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return true;
+    }
+
+    // Validasi waktu selesai tidak boleh melewati jam 23:00
+    final endTime = newShowtimeEnd.hour + (newShowtimeEnd.minute / 60);
+    if (endTime > 23) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Film harus selesai sebelum jam 23:00!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return true;
+    }
+
+    for (var existingShowtime in showtimes) {
+      if (excludeShowtimeId != null && existingShowtime.showtimeId == excludeShowtimeId) continue;
+      if (existingShowtime.theaterId != newShowtime.theaterId) continue;
+
+      final existingFilmDuration = await _getFilmDuration(existingShowtime.filmId);
+      final existingStart = DateTime(
+        existingShowtime.date.year,
+        existingShowtime.date.month,
+        existingShowtime.date.day,
+        existingShowtime.time.hour,
+        existingShowtime.time.minute,
+      );
+      final existingEnd = existingStart.add(Duration(minutes: existingFilmDuration + 15)); // Add 15 minutes buffer
+
+      // Check for conflicts
+      if ((newShowtimeStart.isBefore(existingEnd) && newShowtimeEnd.isAfter(existingStart))) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Jadwal bentrok dengan film lain di theater yang sama!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -117,8 +242,10 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
       );
       if (response.statusCode == 200) {
         final List data = json.decode(response.body)['data'];
+        final allShowtimes = data.map((json) => Showtime.fromJson(json)).toList();
         setState(() {
-          showtimes = data.map((json) => Showtime.fromJson(json)).toList();
+          // Filter out past showtimes
+          showtimes = allShowtimes.where((showtime) => !_isShowtimePassed(showtime)).toList();
         });
       }
     } catch (e) {
@@ -194,7 +321,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
     if (token == null) return;
     try {
       final response = await http.patch(
-        Uri.parse('$baseUrl/showtime/update/${showtime.id}'),
+        Uri.parse('$baseUrl/showtime/update/${showtime.showtimeId}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -237,12 +364,27 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
 
   void _showShowtimeDialog({Showtime? showtime}) {
     final isEditing = showtime != null;
-    final filteredFilms = films.where((film) => film.status == 'now_showing' ).toList();
-    int selectedFilmId = showtime?.filmId ?? (filteredFilms.isNotEmpty ? filteredFilms.first.id : 0);
-    int selectedTheaterId = showtime?.theaterId ?? (theaters.isNotEmpty ? theaters.first.id : 0);
+    final filteredFilms = films.where((film) => film.status == 'now_showing').toList();
+    int selectedFilmId = showtime?.filmId ?? (filteredFilms.isNotEmpty ? filteredFilms.first.filmId : 0);
+    int selectedTheaterId = showtime?.theaterId ?? (theaters.isNotEmpty ? theaters.first.theaterId : 0);
     DateTime selectedDate = showtime?.date ?? DateTime.now();
     TimeOfDay? selectedTime = showtime?.time;
     final priceController = TextEditingController(text: showtime?.price.toString() ?? '');
+
+    // Validasi harga minimal
+    void validatePrice(String value) {
+      if (value.isEmpty) return;
+      final price = double.tryParse(value);
+      if (price == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Harga harus berupa angka!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        priceController.text = '0';
+      }
+    }
 
     showDialog(
       context: context,
@@ -263,7 +405,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                       value: selectedFilmId,
                       items: filteredFilms
                           .map((film) => DropdownMenuItem(
-                                value: film.id,
+                                value: film.filmId,
                                 child: Text(film.title),
                               ))
                           .toList(),
@@ -279,7 +421,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                       value: selectedTheaterId,
                       items: theaters
                           .map((theater) => DropdownMenuItem(
-                                value: theater.id,
+                                value: theater.theaterId,
                                 child: Text(theater.name),
                               ))
                           .toList(),
@@ -301,7 +443,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                               context: context,
                               initialDate: selectedDate,
                               firstDate: DateTime.now(),
-                              lastDate: DateTime.now().add(Duration(days: 365)),
+                              lastDate: DateTime.now().add(Duration(days: 30)),
                             );
                             if (pickedDate != null) {
                               setStateDialog(() {
@@ -320,9 +462,27 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                           onPressed: () async {
                             final pickedTime = await showTimePicker(
                               context: context,
-                              initialTime: selectedTime ?? TimeOfDay.now(),
+                              initialTime: selectedTime ?? TimeOfDay(hour: 8, minute: 0),
+                              builder: (BuildContext context, Widget? child) {
+                                return MediaQuery(
+                                  data: MediaQuery.of(context).copyWith(
+                                    alwaysUse24HourFormat: true,
+                                  ),
+                                  child: child!,
+                                );
+                              },
                             );
                             if (pickedTime != null) {
+                              // Validasi waktu mulai harus antara jam 08:00 - 22:00
+                              if (pickedTime.hour < 8 || pickedTime.hour >= 22) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Jadwal harus antara jam 08:00 - 22:00!'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
                               setStateDialog(() {
                                 selectedTime = pickedTime;
                               });
@@ -339,8 +499,10 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF1A237E)),
                         ),
+                        prefixText: 'Rp ',
                       ),
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      onChanged: validatePrice,
                     ),
                   ],
                 ),
@@ -353,16 +515,34 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                 ElevatedButton(
                   onPressed: () async {
                     if (selectedTime == null || priceController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Semua field harus diisi!'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
                       return;
                     }
+
                     final newShowtime = Showtime(
-                      id: showtime?.id ?? 0,
+                      showtimeId: showtime?.showtimeId ?? 0,
                       filmId: selectedFilmId,
                       theaterId: selectedTheaterId,
                       date: selectedDate,
                       time: selectedTime!,
                       price: double.tryParse(priceController.text) ?? 0.0,
                     );
+
+                    // Check for schedule conflicts
+                    final hasConflict = await _hasScheduleConflict(
+                      newShowtime,
+                      excludeShowtimeId: isEditing ? showtime?.showtimeId : null,
+                    );
+
+                    if (hasConflict) {
+                      return;
+                    }
+
                     if (isEditing) {
                       await updateShowtime(newShowtime);
                     } else {
@@ -387,11 +567,17 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   }
 
   String _filmTitle(int filmId) {
-    return films.firstWhere((film) => film.id == filmId, orElse: () => Film(id: 0, title: 'Unknown', status: '')).title;
+    return films.firstWhere(
+      (film) => film.filmId == filmId,
+      orElse: () => Film(filmId: 0, title: 'Unknown', status: '', durationMin: 0)
+    ).title;
   }
 
   String _theaterName(int theaterId) {
-    return theaters.firstWhere((theater) => theater.id == theaterId, orElse: () => Theater(id: 0, name: 'Unknown')).name;
+    return theaters.firstWhere(
+      (theater) => theater.theaterId == theaterId,
+      orElse: () => Theater(theaterId: 0, name: 'Unknown', totalSeats: 0)
+    ).name;
   }
 
   @override
@@ -486,7 +672,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                               ),
                               IconButton(
                                 icon: Icon(Icons.delete, color: Colors.red[400]),
-                                onPressed: () => deleteShowtime(showtime.id),
+                                onPressed: () => deleteShowtime(showtime.showtimeId),
                               ),
                             ],
                           ),
