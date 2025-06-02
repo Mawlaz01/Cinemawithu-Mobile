@@ -68,16 +68,32 @@ class AdminFilmPage extends StatefulWidget {
 
 class _AdminFilmPageState extends State<AdminFilmPage> {
   List<Film> films = [];
+  List<Film> filteredFilms = [];
   int _nextId = 1;
   final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
   Uint8List? localPosterBytes;
   String? pickedFileName;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchFilms();
+  }
+
+  void _filterFilms(String query) {
+    setState(() {
+      filteredFilms = films.where((film) {
+        return film.title.toLowerCase().contains(query.toLowerCase());
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<String?> _getToken() async {
@@ -95,6 +111,7 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
       final List data = json.decode(response.body)['data'];
       setState(() {
         films = data.map((json) => Film.fromJson(json)).toList();
+        filteredFilms = films;
       });
     }
   }
@@ -355,11 +372,30 @@ class _AdminFilmPageState extends State<AdminFilmPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search films...',
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF1A237E)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                ),
+                onChanged: _filterFilms,
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                itemCount: films.length,
+                itemCount: filteredFilms.length,
                 itemBuilder: (context, index) {
-                  final film = films[index];
+                  final film = filteredFilms[index];
                   Color statusColor;
                   String statusLabel;
                   switch (film.status) {

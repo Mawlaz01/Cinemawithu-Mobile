@@ -36,13 +36,29 @@ class AdminTheaterPage extends StatefulWidget {
 
 class _AdminTheaterPageState extends State<AdminTheaterPage> {
   List<Theater> theaters = [];
+  List<Theater> filteredTheaters = [];
   final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchTheaters();
+  }
+
+  void _filterTheaters(String query) {
+    setState(() {
+      filteredTheaters = theaters.where((theater) {
+        return theater.name.toLowerCase().contains(query.toLowerCase());
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<String?> _getToken() async {
@@ -60,6 +76,7 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
       final List data = json.decode(response.body)['data'];
       setState(() {
         theaters = data.map((json) => Theater.fromJson(json)).toList();
+        filteredTheaters = theaters;
       });
     }
   }
@@ -214,11 +231,30 @@ class _AdminTheaterPageState extends State<AdminTheaterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search theaters...',
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF1A237E)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                ),
+                onChanged: _filterTheaters,
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                itemCount: theaters.length,
+                itemCount: filteredTheaters.length,
                 itemBuilder: (context, index) {
-                  final theater = theaters[index];
+                  final theater = filteredTheaters[index];
                   final badgeColor = Color(0xFF1A237E);
                   return Card(
                     elevation: 5,

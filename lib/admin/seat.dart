@@ -36,15 +36,33 @@ class AdminSeatPage extends StatefulWidget {
 
 class _AdminSeatPageState extends State<AdminSeatPage> {
   List<Seat> seats = [];
+  List<Seat> filteredSeats = [];
   List<Map<String, dynamic>> theaters = [];
   final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchTheaters();
     fetchSeats();
+  }
+
+  void _filterSeats(String query) {
+    setState(() {
+      filteredSeats = seats.where((seat) {
+        final theaterName = _theaterName(seat.theaterId).toLowerCase();
+        return seat.seatLabel.toLowerCase().contains(query.toLowerCase()) ||
+               theaterName.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<String?> _getToken() async {
@@ -85,6 +103,7 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
       final List data = json.decode(response.body)['data'];
       setState(() {
         seats = data.map((json) => Seat.fromJson(json)).toList();
+        filteredSeats = seats;
       });
     }
   }
@@ -284,11 +303,30 @@ class _AdminSeatPageState extends State<AdminSeatPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search seats or theaters...',
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF1A237E)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                ),
+                onChanged: _filterSeats,
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                itemCount: seats.length,
+                itemCount: filteredSeats.length,
                 itemBuilder: (context, index) {
-                  final seat = seats[index];
+                  final seat = filteredSeats[index];
                   final theaterName = _theaterName(seat.theaterId);
                   final badgeColor = Color(0xFF1A237E);
                   return Card(

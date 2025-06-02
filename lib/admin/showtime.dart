@@ -103,10 +103,12 @@ class AdminShowtimePage extends StatefulWidget {
 
 class _AdminShowtimePageState extends State<AdminShowtimePage> {
   List<Showtime> showtimes = [];
+  List<Showtime> filteredShowtimes = [];
   List<Film> films = [];
   List<Theater> theaters = [];
   final String baseUrl = '${UrlApi.baseUrl}/API';
   final _storage = const FlutterSecureStorage();
+  final TextEditingController _searchController = TextEditingController();
 
   Future<int> _getFilmDuration(int filmId) async {
     final film = films.firstWhere((f) => f.filmId == filmId);
@@ -232,6 +234,23 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
     return await _storage.read(key: 'token');
   }
 
+  void _filterShowtimes(String query) {
+    setState(() {
+      filteredShowtimes = showtimes.where((showtime) {
+        final filmTitle = _filmTitle(showtime.filmId).toLowerCase();
+        final theaterName = _theaterName(showtime.theaterId).toLowerCase();
+        return filmTitle.contains(query.toLowerCase()) ||
+               theaterName.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> fetchShowtimes() async {
     final token = await _getToken();
     if (token == null) return;
@@ -246,6 +265,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
         setState(() {
           // Filter out past showtimes
           showtimes = allShowtimes.where((showtime) => !_isShowtimePassed(showtime)).toList();
+          filteredShowtimes = showtimes;
         });
       }
     } catch (e) {
@@ -590,11 +610,30 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search films or theaters...',
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF1A237E)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Color(0xFF1A237E)),
+                  ),
+                ),
+                onChanged: _filterShowtimes,
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                itemCount: showtimes.length,
+                itemCount: filteredShowtimes.length,
                 itemBuilder: (context, index) {
-                  final showtime = showtimes[index];
+                  final showtime = filteredShowtimes[index];
                   final filmTitle = _filmTitle(showtime.filmId);
                   final theaterName = _theaterName(showtime.theaterId);
                   final theaterBadgeColor = Color(0xFF1A237E);
