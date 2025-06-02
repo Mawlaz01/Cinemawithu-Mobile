@@ -28,6 +28,20 @@ class _DetailFilmPageState extends State<DetailFilmPage> {
   final Color backgroundColor = Colors.grey[100]!; // Light grey background
   final Color surfaceColor = Colors.white; // White surface color
 
+  bool _isShowtimePassed(Map<String, dynamic> showtime) {
+    final now = DateTime.now();
+    final showtimeDate = DateTime.parse(showtime['date']);
+    final timeParts = showtime['time'].split(':');
+    final showtimeDateTime = DateTime(
+      showtimeDate.year,
+      showtimeDate.month,
+      showtimeDate.day,
+      int.parse(timeParts[0]),
+      int.parse(timeParts[1]),
+    );
+    return now.isAfter(showtimeDateTime);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +66,12 @@ class _DetailFilmPageState extends State<DetailFilmPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        // Filter out past showtimes
+        if (data['data'] != null && data['data']['showtimes'] != null) {
+          data['data']['showtimes'] = (data['data']['showtimes'] as List)
+              .where((showtime) => !_isShowtimePassed(showtime))
+              .toList();
+        }
         setState(() {
           filmData = data['data'];
           isLoading = false;
