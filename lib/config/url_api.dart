@@ -1,3 +1,3 @@
 class UrlApi {
-  static const String baseUrl = 'http://10.0.0.9:3000';
+  static const String baseUrl = 'http://localhost:3000';
 } 

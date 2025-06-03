@@ -25,26 +25,25 @@ class Showtime {
   });
 
   factory Showtime.fromJson(Map<String, dynamic> json) {
-    final date = DateTime.parse(json['date']);
+    // Ensure the date is parsed as a local date
+    final date = DateTime.parse(json['date']).toLocal();
     final timeParts = json['time'].split(':');
-    final wibDate = date.add(Duration(hours: 7));
     
     return Showtime(
       showtimeId: json['showtime_id'],
       filmId: json['film_id'],
       theaterId: json['theater_id'],
-      date: wibDate,
+      date: date,
       time: TimeOfDay(hour: int.parse(timeParts[0]), minute: int.parse(timeParts[1])),
       price: double.parse(json['price'].toString()),
     );
   }
 
   Map<String, dynamic> toJson() {
-    final utcDate = date.subtract(Duration(hours: 7));
     return {
       'film_id': filmId,
       'theater_id': theaterId,
-      'date': utcDate.toIso8601String().split('T')[0],
+      'date': date.toIso8601String().split('T')[0],
       'time': '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
       'price': price,
     };
@@ -116,15 +115,30 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
   }
 
   bool _isShowtimePassed(Showtime showtime) {
-    final now = DateTime.now();
-    final showtimeDateTime = DateTime(
+    final now = DateTime.now(); // Current local time
+    
+    // Combine showtime date and time into a local DateTime
+    final showtimeStartLocal = DateTime(
       showtime.date.year,
       showtime.date.month,
       showtime.date.day,
       showtime.time.hour,
       showtime.time.minute,
     );
-    return now.isAfter(showtimeDateTime);
+
+    // Get film duration (assuming it's already fetched)
+    final filmDuration = films.firstWhere((f) => f.filmId == showtime.filmId, orElse: () => Film(filmId: 0, title: '', status: '', durationMin: 0)).durationMin;
+
+    // Calculate showtime end time in local time
+    final showtimeEndLocal = showtimeStartLocal.add(Duration(minutes: filmDuration));
+
+    // Calculate current time and showtime end time in WIB (UTC+7)
+    final wibOffset = Duration(hours: 7);
+    final nowWib = now.add(wibOffset);
+    final showtimeEndWib = showtimeEndLocal.add(wibOffset);
+    
+    // A showtime is passed if the current WIB time is after the showtime end time in WIB
+    return nowWib.isAfter(showtimeEndWib);
   }
 
   Future<bool> _hasScheduleConflict(Showtime newShowtime, {int? excludeShowtimeId}) async {
@@ -263,7 +277,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
         final List data = json.decode(response.body)['data'];
         final allShowtimes = data.map((json) => Showtime.fromJson(json)).toList();
         setState(() {
-          // Filter out past showtimes
+          // Filter out past showtimes using WIB time
           showtimes = allShowtimes.where((showtime) => !_isShowtimePassed(showtime)).toList();
           filteredShowtimes = showtimes;
         });
@@ -391,6 +405,11 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
     TimeOfDay? selectedTime = showtime?.time;
     final priceController = TextEditingController(text: showtime?.price.toString() ?? '');
 
+    // Format date for display
+    String formatDate(DateTime date) {
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    }
+
     // Validasi harga minimal
     void validatePrice(String value) {
       if (value.isEmpty) return;
@@ -455,7 +474,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                     ),
                     Row(
                       children: [
-                        Text(selectedDate.toString().split(' ')[0]),
+                        Text(formatDate(selectedDate)),
                         IconButton(
                           icon: Icon(Icons.calendar_today, color: Color(0xFF1A237E)),
                           onPressed: () async {
