@@ -658,7 +658,27 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                   final theaterBadgeColor = Color(0xFF1A237E);
                   final priceBadgeColor = Color(0xFF0D47A1);
                   final date = '${showtime.date.day.toString().padLeft(2, '0')}/${showtime.date.month.toString().padLeft(2, '0')}/${showtime.date.year}';
-                  final time = '${showtime.time.hour.toString().padLeft(2, '0')}:${showtime.time.minute.toString().padLeft(2, '0')}';
+                  
+                  // Calculate end time based on film duration
+                  final filmDuration = films.firstWhere(
+                    (film) => film.filmId == showtime.filmId,
+                    orElse: () => Film(filmId: 0, title: 'Unknown', status: '', durationMin: 0)
+                  ).durationMin;
+                  
+                  final startTime = '${showtime.time.hour.toString().padLeft(2, '0')}:${showtime.time.minute.toString().padLeft(2, '0')}';
+                  
+                  // Calculate end time
+                  final endTime = DateTime(
+                    showtime.date.year,
+                    showtime.date.month,
+                    showtime.date.day,
+                    showtime.time.hour,
+                    showtime.time.minute,
+                  ).add(Duration(minutes: filmDuration));
+                  
+                  final endTimeStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+                  final timeRange = '$startTime-$endTimeStr';
+                  
                   final price = 'Rp${showtime.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
                   return Card(
                     elevation: 5,
@@ -703,7 +723,7 @@ class _AdminShowtimePageState extends State<AdminShowtimePage> {
                                     SizedBox(width: 10),
                                     Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
                                     SizedBox(width: 4),
-                                    Text(time, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                                    Text(timeRange, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                                   ],
                                 ),
                                 SizedBox(height: 6),
